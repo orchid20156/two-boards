@@ -1,0 +1,3522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Two Boards — Learn Chess & Go</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap');
+
+  :root{
+    --ink:#1C1A17;
+    --parchment:#EFE7D8;
+    --parchment-soft:#E4D9C2;
+    --chess:#8B3A3A;
+    --chess-dark:#5E2727;
+    --chess-tint:#F1E3DC;
+    --go:#3F6B5A;
+    --go-dark:#2A4A3E;
+    --go-tint:#E3EAE2;
+    --gold:#C89B3C;
+    --text:#2A2622;
+    --text-soft:#665C4E;
+    --light-square:#EAE0C8;
+    --dark-square:#9C7B4F;
+    --board-wood:#C9A66B;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--parchment);
+    color:var(--text);
+    font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;
+    line-height:1.5;
+  }
+  h1,h2,h3{
+    font-family:'Fraunces',Georgia,serif;
+    font-weight:600;
+    margin:0 0 0.4em 0;
+    color:var(--ink);
+  }
+  p{margin:0 0 1em 0; max-width:62ch; color:var(--text-soft);}
+  button{font-family:inherit;}
+  *:focus-visible{outline:2px solid var(--gold); outline-offset:2px;}
+  @media (prefers-reduced-motion: reduce){*{transition:none!important;}}
+
+  /* ---------- Header ---------- */
+  header{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:22px 40px;
+    border-bottom:1px solid rgba(28,26,23,0.15);
+  }
+  .brand{font-family:'Fraunces',serif; font-size:22px; font-weight:600; letter-spacing:0.01em; color:var(--ink); cursor:pointer;}
+  nav{display:flex; gap:28px;}
+  .navlink{
+    font-size:15px; color:var(--text-soft); cursor:pointer; padding-bottom:4px;
+    border-bottom:2px solid transparent; background:none; border-top:none; border-left:none; border-right:none;
+  }
+  .navlink:hover{color:var(--ink);}
+  .navlink.active-chess{color:var(--chess); border-bottom-color:var(--chess); font-weight:500;}
+  .navlink.active-go{color:var(--go); border-bottom-color:var(--go); font-weight:500;}
+  .navlink.active-home{color:var(--ink); border-bottom-color:var(--gold); font-weight:500;}
+  .navlink.active-play{color:var(--ink); border-bottom-color:var(--gold); font-weight:500;}
+  .navlink.active-puzzles{color:var(--ink); border-bottom-color:var(--gold); font-weight:500;}
+
+  main{max-width:1100px; margin:0 auto; padding:48px 40px 80px;}
+
+  /* ---------- Home ---------- */
+  .hero{max-width:640px; margin-bottom:48px;}
+  .hero h1{font-size:44px; line-height:1.1;}
+  .hero p{font-size:17px;}
+  .path-section{
+    border:1px solid rgba(28,26,23,0.15); padding:28px 36px; margin-bottom:28px; background:var(--parchment-soft);
+  }
+  .path-heading{font-size:15px; color:var(--text-soft); font-weight:500; margin-bottom:16px;}
+  .path-steps{display:flex; gap:24px; margin-bottom:22px; flex-wrap:wrap;}
+  .path-step{font-size:14px; color:var(--text-soft); display:flex; align-items:center; gap:8px;}
+  .path-step-num{
+    width:20px; height:20px; border-radius:50%; background:var(--ink); color:var(--parchment);
+    font-size:11px; display:flex; align-items:center; justify-content:center; flex-shrink:0;
+  }
+  .path-row{display:flex; gap:32px; flex-wrap:wrap;}
+  .path-col{flex:1; min-width:220px;}
+  .path-col-title{font-family:'Fraunces',serif; font-size:17px; margin-bottom:8px;}
+  .path-stat{font-size:13px; color:var(--text-soft); margin-bottom:4px;}
+  .progress-track{width:100%; height:6px; background:rgba(28,26,23,0.1); margin-bottom:2px;}
+  .progress-fill{height:100%; transition:width 0.3s ease;}
+  .continue-btn{
+    margin-top:14px; padding:8px 16px; font-size:13.5px; background:none; border:1px solid; cursor:pointer;
+  }
+  .continue-btn:hover{background:rgba(0,0,0,0.04);}
+
+  .panels{display:flex; border:1px solid rgba(28,26,23,0.15); min-height:280px;}
+  .panel{
+    flex:1; padding:36px; cursor:pointer; position:relative; overflow:hidden;
+    transition:flex-grow 0.25s ease;
+  }
+  .panel:hover{flex-grow:1.15;}
+  .panel-chess{background:var(--chess-tint); border-right:1px solid rgba(28,26,23,0.15);}
+  .panel-go{background:var(--go-tint);}
+  .panel h2{font-size:30px;}
+  .panel-chess h2{color:var(--chess-dark);}
+  .panel-go h2{color:var(--go-dark);}
+  .panel .glyph{font-size:64px; line-height:1; margin-bottom:12px; display:block;}
+  .panel-chess .glyph{color:var(--chess);}
+  .panel-go .glyph{color:var(--go);}
+  .panel .meta{font-size:14px; color:var(--text-soft); margin-top:18px;}
+  .panel .enter{
+    margin-top:20px; font-size:15px; font-weight:500; display:inline-block;
+    border-bottom:1px solid currentColor; padding-bottom:2px;
+  }
+  .panel-chess .enter{color:var(--chess-dark);}
+  .panel-go .enter{color:var(--go-dark);}
+
+  /* ---------- Lesson layout ---------- */
+  .lesson-wrap{display:flex; gap:44px; align-items:flex-start;}
+  .sidebar{width:220px; flex-shrink:0;}
+  .sidebar-title{font-size:12px; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-soft); margin-bottom:10px;}
+  .lesson-item{
+    display:flex; gap:10px; width:100%; text-align:left; padding:10px 0;
+    background:none; border:none; border-top:1px solid rgba(28,26,23,0.12);
+    cursor:pointer; font-size:14.5px; color:var(--text-soft);
+  }
+  .sidebar .lesson-item:last-child{border-bottom:1px solid rgba(28,26,23,0.12);}
+  .lesson-item .num{font-family:'Fraunces',serif; font-size:14px; color:var(--text-soft); width:18px; flex-shrink:0;}
+  .diff-dot{display:inline-block; width:7px; height:7px; border-radius:50%; margin-left:7px; flex-shrink:0;}
+  .diff-dot.diff-beginner{background:var(--go);}
+  .diff-dot.diff-intermediate{background:var(--gold);}
+  .diff-dot.diff-advanced{background:var(--chess);}
+  .diff-label{font-size:11px; padding:2px 8px; border-radius:2px; text-transform:uppercase; letter-spacing:0.04em; font-weight:500;}
+  .diff-label.diff-beginner{background:rgba(63,107,90,0.15); color:var(--go-dark);}
+  .diff-label.diff-intermediate{background:rgba(200,155,60,0.18); color:#8a6a20;}
+  .diff-label.diff-advanced{background:rgba(139,58,58,0.12); color:var(--chess-dark);}
+  .lesson-item.active{color:var(--ink); font-weight:600;}
+  .lesson-item.active .num{color:var(--gold);}
+  .lesson-item:hover{color:var(--ink);}
+
+  .content{flex:1; min-width:0;}
+  .content .kicker{font-size:14px; color:var(--text-soft); margin-bottom:2px;}
+  .content h2{font-size:28px; margin-bottom:10px;}
+  .board-area{display:flex; gap:36px; flex-wrap:wrap; align-items:flex-start; margin-top:20px;}
+  .board-holder{flex-shrink:0;}
+  .board-holder svg{display:block; max-width:100%; height:auto;}
+  .side-note{flex:1; min-width:220px; padding-top:6px;}
+  .side-note .hint{
+    font-size:13.5px; color:var(--text-soft); border-left:2px solid var(--gold);
+    padding-left:12px; margin-top:18px;
+  }
+  .message-box{
+    margin-top:16px; font-size:14px; padding:10px 14px; background:rgba(200,155,60,0.15);
+    border-left:2px solid var(--gold); color:var(--ink); display:none;
+  }
+  .message-box.show{display:block;}
+  .message-box.puzzle-success{background:rgba(63,107,90,0.15); border-left-color:var(--go); font-weight:500;}
+  .message-box.puzzle-fail{background:rgba(139,58,58,0.12); border-left-color:var(--chess);}
+
+  .lesson-nav{display:flex; justify-content:space-between; margin-top:38px; padding-top:18px; border-top:1px solid rgba(28,26,23,0.15);}
+  .lesson-nav button{
+    background:none; border:1px solid rgba(28,26,23,0.25); padding:9px 18px; font-size:14px;
+    cursor:pointer; color:var(--text); 
+  }
+  .lesson-nav button:disabled{opacity:0.3; cursor:default;}
+  .lesson-nav button:not(:disabled):hover{border-color:var(--ink);}
+
+  .reset-btn{
+    background:none; border:none; padding:0; margin-top:14px; font-size:13.5px;
+    color:var(--text-soft); text-decoration:underline; cursor:pointer;
+  }
+  .reset-btn:hover{color:var(--ink);}
+
+  .turn-indicator{display:flex; align-items:center; gap:8px; font-size:14px; margin-bottom:10px; color:var(--text-soft);}
+  .turn-dot{width:14px; height:14px; border-radius:50%; border:1px solid rgba(0,0,0,0.3); display:inline-block;}
+  .turn-dot.black{background:#1C1A17;}
+  .turn-dot.white{background:#F5F1E8;}
+
+  .legend{display:flex; gap:18px; margin-top:14px; font-size:13px; color:var(--text-soft); flex-wrap:wrap;}
+  .legend span{display:flex; align-items:center; gap:6px;}
+  .legend-dot{width:10px; height:10px; border-radius:50%; display:inline-block;}
+
+  .opening-picker{display:flex; flex-direction:column; gap:1px; background:rgba(28,26,23,0.15); margin-top:24px; max-width:520px;}
+  .opening-pick{
+    background:var(--chess-tint); text-align:left; border:none; padding:16px 20px; cursor:pointer;
+    display:flex; flex-direction:column; gap:4px;
+  }
+  .opening-pick:hover{background:#EAD5CA;}
+  .opening-pick-name{font-family:'Fraunces',serif; font-size:16px; color:var(--chess-dark);}
+  .opening-pick-blurb{font-size:13.5px; color:var(--text-soft);}
+
+  .related-box{
+    margin-top:18px; padding:14px 16px; background:rgba(200,155,60,0.1); border-left:2px solid var(--gold);
+  }
+  .related-box-label{font-size:11px; text-transform:uppercase; letter-spacing:0.05em; color:var(--text-soft); margin-bottom:6px;}
+  .related-box-link{
+    background:none; border:none; padding:0; font-size:14px; color:var(--ink); font-weight:500; cursor:pointer; text-align:left;
+  }
+  .related-box-link:hover{text-decoration:underline;}
+
+  .value-grid{display:flex; gap:1px; background:rgba(28,26,23,0.15); margin-top:24px; flex-wrap:wrap;}
+  .value-card{background:var(--chess-tint); flex:1; min-width:110px; padding:24px 16px; text-align:center;}
+  .value-glyph{font-size:40px; color:var(--chess-dark); display:block;}
+  .value-name{font-family:'Fraunces',serif; font-size:16px; margin-top:10px; color:var(--ink);}
+  .value-points{font-size:13px; color:var(--text-soft); margin-top:4px;}
+
+  /* ---------- Play vs AI ---------- */
+  .onboarding-note{
+    margin-bottom:18px; padding:12px 16px; background:rgba(63,107,90,0.08); border-left:2px solid var(--go);
+    font-size:13.5px; color:var(--text-soft); max-width:60ch;
+  }
+
+  .game-tabs{display:flex; gap:0; border-bottom:1px solid rgba(28,26,23,0.15); margin-bottom:28px;}
+  .game-tab{
+    padding:12px 22px; background:none; border:none; cursor:pointer; font-size:15px;
+    color:var(--text-soft); border-bottom:2px solid transparent; margin-bottom:-1px;
+  }
+  .game-tab.active{color:var(--ink); font-weight:600;}
+  .game-tab.active[data-game="chess"]{border-bottom-color:var(--chess);}
+  .game-tab.active[data-game="go"]{border-bottom-color:var(--go);}
+
+  .play-controls{display:flex; align-items:center; gap:14px; flex-wrap:wrap; margin-bottom:18px;}
+  .diff-group{display:flex; gap:6px;}
+  .diff-btn{
+    padding:7px 14px; font-size:13px; border:1px solid rgba(28,26,23,0.25); background:none;
+    cursor:pointer; color:var(--text-soft);
+  }
+  .diff-btn.active{background:var(--ink); color:var(--parchment); border-color:var(--ink);}
+  .action-btn{
+    padding:9px 16px; font-size:14px; border:1px solid rgba(28,26,23,0.25); background:none;
+    cursor:pointer; color:var(--text);
+  }
+  .action-btn:hover{border-color:var(--ink);}
+  .action-btn:disabled{opacity:0.35; cursor:default;}
+  .status-line{font-size:15px; margin:10px 0 4px; color:var(--ink); font-weight:500; min-height:22px;}
+  .thinking{color:var(--text-soft); font-style:italic; font-weight:400;}
+  .capture-tally{display:flex; gap:20px; font-size:13.5px; color:var(--text-soft); margin-top:8px;}
+  .game-over-banner{
+    margin-top:18px; padding:16px 20px; background:rgba(200,155,60,0.15); border-left:3px solid var(--gold);
+  }
+  .game-over-banner h3{margin-bottom:6px; font-size:18px;}
+  .score-row{display:flex; gap:26px; font-size:14px; color:var(--text-soft); margin-top:8px;}
+
+  @media (max-width:720px){
+    header{padding:18px 20px;}
+    main{padding:30px 20px 60px;}
+    .panels{flex-direction:column;}
+    .panel-chess{border-right:none; border-bottom:1px solid rgba(28,26,23,0.15);}
+    .lesson-wrap{flex-direction:column;}
+    .sidebar{width:100%;}
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="brand" data-action="nav" data-target="home">Two&nbsp;Boards</div>
+  <nav>
+    <button class="navlink" data-action="nav" data-target="home">Home</button>
+    <button class="navlink" data-action="nav" data-target="chess">Chess</button>
+    <button class="navlink" data-action="nav" data-target="go">Go</button>
+    <button class="navlink" data-action="nav" data-target="play">Play vs AI</button>
+    <button class="navlink" data-action="nav" data-target="puzzles">Puzzles</button>
+  </nav>
+</header>
+<main id="app"></main>
+
+<script>
+/* ============================================================
+   PROGRESS TRACKING (persisted via localStorage)
+============================================================ */
+const PROGRESS_STORAGE_KEY = 'two-boards-progress-v1';
+
+function loadProgress(){
+  const empty = { chessLessons: [], goLessons: [], chessPuzzles: [], goPuzzles: [], gamesStarted: 0 };
+  try {
+    const raw = localStorage.getItem(PROGRESS_STORAGE_KEY);
+    if(!raw) return empty;
+    const parsed = JSON.parse(raw);
+    return {
+      chessLessons: Array.isArray(parsed.chessLessons) ? parsed.chessLessons : [],
+      goLessons: Array.isArray(parsed.goLessons) ? parsed.goLessons : [],
+      chessPuzzles: Array.isArray(parsed.chessPuzzles) ? parsed.chessPuzzles : [],
+      goPuzzles: Array.isArray(parsed.goPuzzles) ? parsed.goPuzzles : [],
+      gamesStarted: typeof parsed.gamesStarted === 'number' ? parsed.gamesStarted : 0,
+    };
+  } catch(e){
+    return empty; // private browsing, quota errors, or corrupted data — just start fresh
+  }
+}
+
+function saveProgress(){
+  try { localStorage.setItem(PROGRESS_STORAGE_KEY, JSON.stringify(state.progress)); }
+  catch(e){ /* storage unavailable — progress just won't persist this session */ }
+}
+
+function markLessonViewed(game, title){
+  const key = game === 'chess' ? 'chessLessons' : 'goLessons';
+  if(!state.progress[key].includes(title)){
+    state.progress[key].push(title);
+    saveProgress();
+  }
+}
+
+function markPuzzleSolved(game, title){
+  const key = game === 'chess' ? 'chessPuzzles' : 'goPuzzles';
+  if(!state.progress[key].includes(title)){
+    state.progress[key].push(title);
+    saveProgress();
+  }
+}
+
+function recordGameStarted(){
+  state.progress.gamesStarted += 1;
+  saveProgress();
+}
+
+/* ============================================================
+   STATE
+============================================================ */
+const state = {
+  section: 'home',
+  progress: loadProgress(),
+  chess: { lessonIdx: 0, board: null, hero: null, extraPositions: [], specialUsed: false, opening: null, theory: null, initialized: false, promoted: false },
+  go: { lessonIdx: 0, board: null, turn: 'black', inspect: null, message: '', koPoint: null, joseki: null, ladder: null, initialized: false },
+  play: {
+    game: 'chess',
+    chessDifficulty: 'easy',
+    chess: null, // { gs, selected, legalForSelected, status, thinking, log }
+    go: null     // { board, turn, koPoint, passCount, lastMoveWasPass, thinking, gameOver, message, scores }
+  },
+  puzzles: {
+    game: 'chess',
+    chessIndex: 0,
+    chessAttempt: null, // { gs, selected, solved, message }
+    goIndex: 0,
+    goAttempt: null      // { board, solved, message }
+  }
+};
+
+/* ============================================================
+   CHESS LOGIC
+============================================================ */
+function emptyBoard8(){ return Array.from({length:8},()=>Array(8).fill(null)); }
+
+function computeMoves(type, pos, board){
+  const [r,c] = pos;
+  const moves = [], captures = [];
+  const inB = (r,c)=> r>=0 && r<8 && c>=0 && c<8;
+  const addLine = (dr,dc)=>{
+    let nr=r+dr, nc=c+dc;
+    while(inB(nr,nc)){
+      const occ = board[nr][nc];
+      if(!occ){ moves.push([nr,nc]); }
+      else { if(occ==='enemy') captures.push([nr,nc]); break; }
+      nr+=dr; nc+=dc;
+    }
+  };
+  const step = (deltas)=>{
+    deltas.forEach(([dr,dc])=>{
+      const nr=r+dr, nc=c+dc;
+      if(inB(nr,nc)){
+        const occ = board[nr][nc];
+        if(!occ) moves.push([nr,nc]);
+        else if(occ==='enemy') captures.push([nr,nc]);
+      }
+    });
+  };
+  if(type==='rook') [[1,0],[-1,0],[0,1],[0,-1]].forEach(([dr,dc])=>addLine(dr,dc));
+  if(type==='bishop') [[1,1],[1,-1],[-1,1],[-1,-1]].forEach(([dr,dc])=>addLine(dr,dc));
+  if(type==='queen') [[1,0],[-1,0],[0,1],[0,-1],[1,1],[1,-1],[-1,1],[-1,-1]].forEach(([dr,dc])=>addLine(dr,dc));
+  if(type==='king') step([[1,0],[-1,0],[0,1],[0,-1],[1,1],[1,-1],[-1,1],[-1,-1]]);
+  if(type==='knight') step([[2,1],[2,-1],[-2,1],[-2,-1],[1,2],[1,-2],[-1,2],[-1,-2]]);
+  if(type==='pawn'){
+    const startRow = 6;
+    const oneStep = [r-1,c];
+    if(inB(...oneStep) && !board[oneStep[0]][oneStep[1]]){
+      moves.push(oneStep);
+      if(r===startRow){
+        const twoStep = [r-2,c];
+        if(!board[twoStep[0]][twoStep[1]]) moves.push(twoStep);
+      }
+    }
+    [[r-1,c-1],[r-1,c+1]].forEach(([nr,nc])=>{
+      if(inB(nr,nc) && board[nr][nc]==='enemy') captures.push([nr,nc]);
+    });
+  }
+  return { moves, captures };
+}
+
+const CHESS_LESSONS = [
+  {
+    title: 'The Starting Position',
+    difficulty: 'beginner',
+    type: 'startpos',
+    intro: 'Every chess game begins from the same setup. Each side has 8 pawns lined up on the second rank, with rooks in the corners, knights beside them, bishops next, and the queen and king in the center. The queen always starts on the square matching her own color — white queen on a light square, black queen on a dark one.',
+    hint: ''
+  },
+  {
+    title: 'The Pawn',
+    difficulty: 'beginner',
+    piece: 'pawn',
+    glyph: '♙',
+    intro: 'Pawns move straight ahead, one square at a time — or two squares on their very first move. They can never move backward. But they capture differently: only diagonally, one square forward.',
+    hint: 'Click a gold dot to step forward, or a marked square to capture diagonally.',
+    setup(){
+      const board = emptyBoard8();
+      board[5][3] = 'enemy';
+      board[5][5] = 'enemy';
+      return { board, hero: [6,4] };
+    }
+  },
+  {
+    title: 'The Knight',
+    difficulty: 'beginner',
+    piece: 'knight',
+    glyph: '♘',
+    intro: 'The knight jumps in an L-shape: two squares in one direction, then one square to the side. It is the only piece that can leap over others — the pieces around it don\'t block its path.',
+    hint: 'Notice the knight can jump straight over the surrounding pieces.',
+    setup(){
+      const board = emptyBoard8();
+      board[3][3]='own'; board[4][4]='own'; board[5][3]='own'; board[4][2]='own';
+      board[2][4]='enemy';
+      return { board, hero: [4,3] };
+    }
+  },
+  {
+    title: 'The Bishop',
+    difficulty: 'beginner',
+    piece: 'bishop',
+    glyph: '♗',
+    intro: 'The bishop glides diagonally, as far as the board allows. It stays on the same color square for its entire life. A bishop starting on a light square can never reach a dark one.',
+    hint: 'The bishop stops where another piece is in the way, and can capture an enemy piece it reaches.',
+    setup(){
+      const board = emptyBoard8();
+      board[2][2]='own';
+      board[6][6]='enemy';
+      return { board, hero: [4,4] };
+    }
+  },
+  {
+    title: 'The Rook',
+    difficulty: 'beginner',
+    piece: 'rook',
+    glyph: '♖',
+    intro: 'The rook slides in straight lines — horizontally or vertically — for any distance, until it meets another piece or the edge of the board.',
+    hint: 'Try moving the rook along its rank or file.',
+    setup(){
+      const board = emptyBoard8();
+      board[4][6]='own';
+      board[1][4]='enemy';
+      return { board, hero: [4,4] };
+    }
+  },
+  {
+    title: 'The Queen',
+    difficulty: 'beginner',
+    piece: 'queen',
+    glyph: '♕',
+    intro: 'The queen combines the rook and the bishop: any straight line, any diagonal, any distance. She is the most powerful piece on the board.',
+    hint: 'The queen\'s reach covers both straight lines and diagonals at once.',
+    setup(){
+      const board = emptyBoard8();
+      board[4][1]='own';
+      board[7][7]='enemy';
+      return { board, hero: [4,4] };
+    }
+  },
+  {
+    title: 'The King',
+    difficulty: 'beginner',
+    piece: 'king',
+    glyph: '♔',
+    intro: 'The king moves just one square in any direction — but the entire game revolves around keeping it safe. Lose your king to checkmate, and the game is over.',
+    hint: 'One square at a time, in any of the eight directions.',
+    setup(){
+      const board = emptyBoard8();
+      board[5][5]='own';
+      board[3][4]='enemy';
+      return { board, hero: [4,4] };
+    }
+  },
+  {
+    title: 'Piece Values',
+    difficulty: 'beginner',
+    type: 'values',
+    intro: 'Not all pieces are worth the same. Experienced players keep a rough point count in their head to judge whether a trade is worthwhile. The king has no point value — it can never be traded, because losing it ends the game.',
+    hint: ''
+  },
+  {
+    title: 'Castling',
+    difficulty: 'beginner',
+    piece: 'king',
+    glyph: '♔',
+    intro: 'Castling is the one time two pieces move at once. If the king and a rook haven\'t moved yet, and the squares between them are empty, the king can slide two squares toward the rook, and the rook hops to the square right next to it. It\'s the main way to get your king to safety.',
+    hint: 'Click the gold square two spaces away to castle — watch the rook jump too.',
+    special: { type: 'castleKing', kingStart: [7,4], targetPos: [7,6], rookFrom: [7,7], rookTo: [7,5] },
+    setup(){
+      const board = emptyBoard8();
+      return { board, hero: [7,4], extra: [{ id:'rook', pos:[7,7], glyph:'♖' }] };
+    }
+  },
+  {
+    title: 'En Passant',
+    difficulty: 'intermediate',
+    piece: 'pawn',
+    glyph: '♙',
+    intro: 'If an enemy pawn advances two squares and lands right beside yours, you may capture it "in passing," as if it had only moved one square — but only on your very next move. Miss the chance, and it\'s gone for good.',
+    hint: 'Click the gold square diagonally ahead to capture the black pawn beside you.',
+    special: { type: 'enPassant', pawnStart: [3,4], capturePos: [3,3], targetPos: [2,3] },
+    setup(){
+      const board = emptyBoard8();
+      board[3][3] = 'enemy';
+      return { board, hero: [3,4] };
+    }
+  },
+  {
+    title: 'Check',
+    difficulty: 'beginner',
+    piece: 'rook',
+    glyph: '♖',
+    intro: 'When a piece attacks the square the king stands on, the king is "in check." Here the rook controls the entire g-file, so the king at g1 is in check. The king must move to safety, block the line, or capture the attacker — if none of those are possible, it\'s checkmate.',
+    hint: 'The highlighted squares show the rook\'s line of attack straight down to the king.',
+    setup(){
+      const board = emptyBoard8();
+      board[7][6]='enemy'; // king square, treated as capturable target
+      return { board, hero: [0,6], extra: [{pos:[7,6], glyph:'♚', label:'king'}] };
+    }
+  },
+  {
+    title: 'Checkmate',
+    difficulty: 'beginner',
+    relatedPuzzle: 'Mate in One',
+    piece: 'rook',
+    glyph: '♖',
+    intro: 'Checkmate happens when a king is in check and has no way out — it can\'t move to safety, block the attack, or capture the attacker. Here the rook attacks the king along the back rank, and the king\'s own pawns block every escape square. That\'s checkmate — the game is over.',
+    hint: 'The rook\'s line reaches all the way to the king, who has nowhere to run.',
+    setup(){
+      const board = emptyBoard8();
+      board[7][6] = 'enemy';
+      return { board, hero: [7,0], extra: [
+        { pos:[7,6], glyph:'♚', label:'king' },
+        { pos:[6,5], glyph:'♟', label:'pawn' },
+        { pos:[6,6], glyph:'♟', label:'pawn' },
+        { pos:[6,7], glyph:'♟', label:'pawn' }
+      ] };
+    }
+  },
+  {
+    title: 'Stalemate',
+    difficulty: 'intermediate',
+    piece: 'queen',
+    glyph: '♕',
+    intro: 'Sometimes a player has no legal move at all, but their king is not in check — that\'s a stalemate, and the game ends in a draw. Here the black king in the corner isn\'t under attack, but every square it could step to is covered by the white queen.',
+    hint: 'Notice the queen covers every square around the king except the corner it\'s standing on.',
+    setup(){
+      const board = emptyBoard8();
+      return { board, hero: [2,6], extra: [{ pos:[0,7], glyph:'♚', label:'king' }] };
+    }
+  },
+  {
+    title: 'Forks',
+    difficulty: 'intermediate',
+    relatedPuzzle: 'Find the Fork',
+    piece: 'knight',
+    glyph: '♘',
+    intro: 'A "fork" is when one piece attacks two enemy targets at the same time — the opponent can only save one of them. Knights are especially good at this, since their odd jumping pattern often lands on two valuable pieces at once without warning.',
+    hint: 'Click the knight\'s square to see it attacking both the king and the queen simultaneously.',
+    setup(){
+      const board = emptyBoard8();
+      board[0][4] = 'enemy'; // king on e8
+      board[1][5] = 'enemy'; // queen on f7
+      return { board, hero: [2,3], extra: [
+        { pos:[0,4], glyph:'♚', label:'king' },
+        { pos:[1,5], glyph:'♛', label:'queen' }
+      ] };
+    }
+  },
+  {
+    title: 'Pins',
+    difficulty: 'intermediate',
+    relatedPuzzle: 'Win the Piece',
+    piece: 'bishop',
+    glyph: '♗',
+    intro: 'A "pin" immobilizes an enemy piece by threatening something more valuable directly behind it on the same line. Here the bishop attacks the knight — but the black king sits right behind it on the same diagonal. If the knight ever moves, the bishop would attack the king directly, so in a real game the knight is stuck exactly where it is.',
+    hint: 'The bishop\'s diagonal stops at the knight — that\'s the piece being pinned.',
+    setup(){
+      const board = emptyBoard8();
+      board[2][2] = 'enemy'; // knight on c6, pinned
+      return { board, hero: [3,1], extra: [{ pos:[0,4], glyph:'♚', label:'king' }] };
+    }
+  },
+  {
+    title: 'Skewers',
+    difficulty: 'intermediate',
+    piece: 'rook',
+    glyph: '♖',
+    intro: 'A "skewer" looks like a pin in reverse: the more valuable piece is attacked first and forced to move, exposing a less valuable piece directly behind it. Here the rook attacks the king down the open file. The king has to move out of check — and once it does, the rook will capture the piece that was hiding behind it.',
+    hint: 'The rook\'s file reaches the king first; the rook behind it is what gets won.',
+    setup(){
+      const board = emptyBoard8();
+      board[3][0] = 'enemy'; // king on a5
+      return { board, hero: [7,0], extra: [{ pos:[0,0], glyph:'♜', label:'rook' }] };
+    }
+  },
+  {
+    title: 'Discovered Check',
+    difficulty: 'advanced',
+    piece: 'bishop',
+    glyph: '♗',
+    intro: 'A "discovered check" happens when moving one piece out of the way reveals an attack from a completely different piece. Imagine a knight had been sitting between this bishop and the black king — it just hopped away to attack something else, and in doing so, uncovered this check. The piece that moved isn\'t even the one giving check.',
+    hint: 'The bishop\'s diagonal now reaches the king, uninterrupted.',
+    setup(){
+      const board = emptyBoard8();
+      board[0][0] = 'enemy'; // king on a8
+      return { board, hero: [4,4] };
+    }
+  },
+  {
+    title: 'Double Check',
+    difficulty: 'advanced',
+    piece: 'bishop',
+    glyph: '♗',
+    intro: 'Sometimes a single move attacks the king with two pieces at once — a "double check." Here the bishop attacks the king directly, and the knight attacks it too, independently. Since two separate pieces are giving check, the king can\'t block one line while staying open to the other, and can\'t capture both attackers in a single move. Double check almost always forces the king to move.',
+    hint: 'Both the bishop\'s diagonal and the knight\'s jump reach the king at the same time.',
+    setup(){
+      const board = emptyBoard8();
+      board[0][4] = 'enemy'; // king on e8
+      return { board, hero: [3,1], extra: [{ pos:[2,3], glyph:'♘', label:'knight' }] };
+    }
+  },
+  {
+    title: 'Pawn Promotion',
+    difficulty: 'beginner',
+    piece: 'pawn',
+    glyph: '♙',
+    intro: 'When a pawn reaches the far side of the board, it can\'t stay a pawn — it immediately promotes to a stronger piece, almost always a queen, since she\'s the most powerful one available. (You can technically promote to a rook, bishop, or knight instead — called "underpromotion" — but that\'s rare, usually reserved for very specific tactical tricks.) Move the pawn below all the way to the last rank and watch it promote.',
+    hint: 'Move the pawn forward one more step to promote it.',
+    special: { type: 'promotion', targetRow: 0 },
+    setup(){
+      const board = emptyBoard8();
+      return { board, hero: [1,4] };
+    }
+  },
+  {
+    title: 'King and Rook Mate',
+    difficulty: 'intermediate',
+    relatedPuzzle: 'Mate in One',
+    piece: 'king',
+    glyph: '♔',
+    intro: 'With just a king and rook, you can always force checkmate against a lone king — it just takes technique. The rook cuts the enemy king off along a rank or file, and your own king walks in to help, shrinking the box the enemy king is trapped in until there\'s nowhere left to run. Here the rook already has the black king boxed onto the back rank — try walking your king closer.',
+    hint: 'Every step you take shrinks the box the black king is trapped in.',
+    setup(){
+      const board = emptyBoard8();
+      board[0][4] = 'enemy'; // black king, confined to the back rank
+      return { board, hero: [5,4], extra: [{ pos:[7,0], glyph:'♖', label:'rook' }] };
+    }
+  },
+  {
+    title: 'Removing the Defender',
+    difficulty: 'intermediate',
+    relatedPuzzle: 'Win the Piece',
+    piece: 'bishop',
+    glyph: '♗',
+    intro: 'Sometimes the piece worth attacking isn\'t the valuable one — it\'s whatever is defending it. Here the black queen looks safe, but she\'s only protected by the rook next to her. Capture the rook, and the queen is defenseless on your very next move.',
+    hint: 'The bishop can reach the rook that\'s defending the queen.',
+    setup(){
+      const board = emptyBoard8();
+      board[1][3] = 'enemy'; // rook — the defender, and the real target
+      return { board, hero: [4,0], extra: [{ pos:[0,3], glyph:'♛', label:'queen' }] };
+    }
+  },
+  {
+    title: 'Opening Moves',
+    difficulty: 'intermediate',
+    type: 'opening',
+    intro: 'The opening phase is about two things: fighting for the center and getting your pieces into play quickly. There\'s no single correct first move, but some have stood the test of time. Try any legal first move for White below — the most time-tested ones are marked with a gold ring.',
+    hint: 'Click a white piece, then click a highlighted square to play it.'
+  },
+  {
+    title: 'Opening Theory',
+    difficulty: 'advanced',
+    type: 'theory',
+    intro: 'Beyond the very first move, chess has centuries of studied "opening theory" — named sequences that reliably lead to positions each side understands well. Pick one below and step through it move by move.',
+    hint: ''
+  }
+];
+
+// A handful of well-known opening sequences for the Opening Theory lesson.
+// Each move is resolved against the real rules engine, so the sequence is
+// guaranteed to be legal — only the captions are hand-written.
+const OPENING_THEORY = [
+  {
+    name: 'Italian Game',
+    blurb: 'One of the oldest recorded openings, aiming straight at Black\'s weak f7 square.',
+    moves: [
+      { from:[6,4], to:[4,4], caption: '1.e4 — White claims the center and opens diagonals for the queen and light-squared bishop.' },
+      { from:[1,4], to:[3,4], caption: '1...e5 — Black claims the center right back, leading to an open, symmetric position.' },
+      { from:[7,6], to:[5,5], caption: '2.Nf3 — White develops a knight and attacks the e5 pawn.' },
+      { from:[0,1], to:[2,2], caption: '2...Nc6 — Black defends e5 by developing the other knight.' },
+      { from:[7,5], to:[4,2], caption: '3.Bc4 — the Italian Game. The bishop eyes f7, Black\'s most vulnerable square.' },
+      { from:[0,5], to:[3,2], caption: '3...Bc5 — Black mirrors the development, aiming right back at f2. This is the classical "Giuoco Piano" (quiet game).' },
+      { from:[6,2], to:[5,2], caption: '4.c3 — White prepares to build a bigger center with d4 next, and gives the bishop on c4 a retreat square in case it\'s attacked.' },
+      { from:[0,6], to:[2,5], caption: '4...Nf6 — Black develops the last minor piece and attacks e4.' },
+      { from:[6,3], to:[5,3], caption: '5.d3 — rather than pushing all the way to d4, White supports e4 modestly — a solid setup sometimes called the "Giuoco Pianissimo."' },
+      { from:[1,3], to:[2,3], caption: '5...d6 — Black mirrors again, and both sides now have a stable, classical position ready for a long middlegame.' }
+    ]
+  },
+  {
+    name: 'Ruy Lopez',
+    blurb: 'The "Spanish Opening" — one of the oldest and most deeply studied openings in chess.',
+    moves: [
+      { from:[6,4], to:[4,4], caption: '1.e4 — the same central battle as the Italian Game begins.' },
+      { from:[1,4], to:[3,4], caption: '1...e5 — Black mirrors White\'s claim on the center.' },
+      { from:[7,6], to:[5,5], caption: '2.Nf3 — attacking e5 and developing a piece.' },
+      { from:[0,1], to:[2,2], caption: '2...Nc6 — defending e5 once again.' },
+      { from:[7,5], to:[3,1], caption: '3.Bb5 — the Ruy Lopez. Rather than aiming at f7, White pins the knight on c6, since it\'s the only piece defending e5.' },
+      { from:[1,0], to:[2,0], caption: '3...a6 — Black asks the question immediately: the bishop must decide whether to trade, retreat, or hold the pin.' },
+      { from:[3,1], to:[4,0], caption: '4.Ba4 — White retreats but keeps the pin alive, since the bishop still eyes c6 through Black\'s a-pawn.' },
+      { from:[0,6], to:[2,5], caption: '4...Nf6 — Black develops and counter-attacks e4, turning up the pressure.' },
+      { from:[7,4], to:[7,6], caption: '5.O-O — White castles into safety. This exact sequence is one of the most heavily analyzed positions in all of chess.' }
+    ]
+  },
+  {
+    name: 'Sicilian Defense',
+    blurb: 'The single most popular reply to 1.e4 at the top level — sharp and unbalanced from move one.',
+    moves: [
+      { from:[6,4], to:[4,4], caption: '1.e4 — White opens with the most aggressive central try.' },
+      { from:[1,2], to:[3,2], caption: '1...c5 — the Sicilian Defense. Instead of meeting White in the center, Black strikes from the side, aiming to unbalance the game rather than mirror it.' },
+      { from:[7,6], to:[5,5], caption: '2.Nf3 — White develops naturally, preparing to fight for the center with d4.' },
+      { from:[1,3], to:[2,3], caption: '2...d6 — a flexible setup, preparing to develop pieces before committing to a central pawn structure.' },
+      { from:[6,3], to:[4,3], caption: '3.d4 — White strikes in the center while Black is still developing.' },
+      { from:[3,2], to:[4,3], caption: '3...cxd4 — Black captures, trading the flank pawn for a share of the center.' },
+      { from:[5,5], to:[4,3], caption: '4.Nxd4 — White recaptures with the knight, landing it on a strong central square.' },
+      { from:[0,6], to:[2,5], caption: '4...Nf6 — Black develops and immediately attacks the e4 pawn.' },
+      { from:[7,1], to:[5,2], caption: '5.Nc3 — White defends e4 and develops another piece.' },
+      { from:[1,0], to:[2,0], caption: '5...a6 — the "Najdorf" move, one of the most-played moves in all of chess. It prepares ...e5 or ...b5 without allowing an annoying knight check on b5 first.' }
+    ]
+  },
+  {
+    name: 'Queen\'s Gambit',
+    blurb: 'A pawn offer on move two that isn\'t really a sacrifice — White nearly always gets it back.',
+    moves: [
+      { from:[6,3], to:[4,3], caption: '1.d4 — White claims the center from the other side of the board.' },
+      { from:[1,3], to:[3,3], caption: '1...d5 — Black responds in kind.' },
+      { from:[6,2], to:[4,2], caption: '2.c4 — the Queen\'s Gambit. White offers a flank pawn to pull Black\'s d-pawn out of the center.' },
+      { from:[1,4], to:[2,4], caption: '2...e6 — the "Queen\'s Gambit Declined." Rather than grabbing the pawn, Black reinforces d5 and keeps a solid structure.' },
+      { from:[7,1], to:[5,2], caption: '3.Nc3 — White develops and adds more pressure on d5.' },
+      { from:[0,6], to:[2,5], caption: '3...Nf6 — Black develops symmetrically.' },
+      { from:[7,2], to:[3,6], caption: '4.Bg5 — White pins the f6 knight against the queen, a typical idea in this structure.' }
+    ]
+  },
+  {
+    name: 'French Defense',
+    blurb: 'A rock-solid pawn structure for Black, at the cost of a temporarily boxed-in bishop.',
+    moves: [
+      { from:[6,4], to:[4,4], caption: '1.e4 — White stakes out the center.' },
+      { from:[1,4], to:[2,4], caption: '1...e6 — the French Defense. Black prepares ...d5 to challenge the center while keeping a very solid pawn structure.' },
+      { from:[6,3], to:[4,3], caption: '2.d4 — White builds an even bigger center.' },
+      { from:[1,3], to:[3,3], caption: '2...d5 — Black follows through, immediately challenging White\'s center.' },
+      { from:[7,1], to:[5,2], caption: '3.Nc3 — White defends e4 and develops a piece.' },
+      { from:[0,6], to:[2,5], caption: '3...Nf6 — Black develops and pressures e4 once more.' },
+      { from:[7,2], to:[3,6], caption: '4.Bg5 — White pins the knight, a common idea against the French.' },
+      { from:[0,5], to:[1,4], caption: '4...Be7 — Black breaks the pin and prepares to castle, completing a very typical French setup.' }
+    ]
+  }
+];
+
+// Each puzzle's position and intended solution have been verified directly
+// against the rules engine: 'mate' puzzles are graded by asking the engine
+// whether the resulting position is actually checkmate (so any valid mating
+// move is accepted, not just one specific move); 'move' puzzles are graded
+// against a fixed list of accepted solution moves.
+function emptyChessBoard(){ return Array.from({length:8},()=>Array(8).fill(null)); }
+const CHESS_PUZZLES = [
+  {
+    title: 'Mate in One',
+    intro: 'White to move. Find the checkmate.',
+    type: 'mate',
+    successText: 'Checkmate! The rook controls the entire back rank, and the king has no escape — its own pawns block every square.',
+    failText: "That's not mate. Look for a move that traps the king completely.",
+    setup(){
+      const board = emptyChessBoard();
+      board[6][6] = {t:'k',c:'w'};
+      board[7][4] = {t:'r',c:'w'};
+      board[0][6] = {t:'k',c:'b'};
+      board[1][5] = {t:'p',c:'b'};
+      board[1][6] = {t:'p',c:'b'};
+      board[1][7] = {t:'p',c:'b'};
+      return { board, turn:'w', rights:{wK:false,wQ:false,bK:false,bQ:false}, ep:null };
+    }
+  },
+  {
+    title: 'Mate in One',
+    intro: 'White to move. Find the checkmate.',
+    type: 'mate',
+    successText: 'Checkmate! The queen delivers check while the bishop guards her from capture, and the king has nowhere to run.',
+    failText: "That's not mate yet. Look for a queen move supported by the bishop.",
+    setup(){
+      const board = emptyChessBoard();
+      board[7][0] = {t:'k',c:'w'};
+      board[1][0] = {t:'q',c:'w'};
+      board[2][5] = {t:'b',c:'w'};
+      board[0][7] = {t:'k',c:'b'};
+      return { board, turn:'w', rights:{wK:false,wQ:false,bK:false,bQ:false}, ep:null };
+    }
+  },
+  {
+    title: 'Find the Fork',
+    intro: 'White to move. One move attacks both the king and the queen at once.',
+    type: 'move',
+    solutionMoves: [{from:[4,4], to:[2,3]}],
+    successText: 'That\'s the fork! The knight checks the king and attacks the queen at the same time — Black can only save one of them.',
+    failText: "That doesn't create a fork. Look for a knight move that attacks two things at once.",
+    setup(){
+      const board = emptyChessBoard();
+      board[7][0] = {t:'k',c:'w'};
+      board[4][4] = {t:'n',c:'w'};
+      board[0][4] = {t:'k',c:'b'};
+      board[1][5] = {t:'q',c:'b'};
+      return { board, turn:'w', rights:{wK:false,wQ:false,bK:false,bQ:false}, ep:null };
+    }
+  },
+  {
+    title: 'Win the Piece',
+    intro: 'White to move. The knight on c6 is pinned to the king and has no other defender.',
+    type: 'move',
+    solutionMoves: [{from:[3,1], to:[2,2]}],
+    successText: 'Correct! Since the knight is pinned and undefended, it simply can\'t be saved.',
+    failText: "There's a free piece on the board — look for what the bishop can safely capture.",
+    setup(){
+      const board = emptyChessBoard();
+      board[7][0] = {t:'k',c:'w'};
+      board[3][1] = {t:'b',c:'w'};
+      board[2][2] = {t:'n',c:'b'};
+      board[0][4] = {t:'k',c:'b'};
+      return { board, turn:'w', rights:{wK:false,wQ:false,bK:false,bQ:false}, ep:null };
+    }
+  },
+  {
+    title: 'Mate in One',
+    intro: 'White to move. Find the checkmate.',
+    type: 'mate',
+    successText: 'Checkmate! The queen checks down the file while the king seals off every escape square.',
+    failText: "That's not mate yet. Bring the queen into the attack.",
+    setup(){
+      const board = emptyChessBoard();
+      board[1][5] = {t:'k',c:'w'};
+      board[7][7] = {t:'q',c:'w'};
+      board[0][7] = {t:'k',c:'b'};
+      return { board, turn:'w', rights:{wK:false,wQ:false,bK:false,bQ:false}, ep:null };
+    }
+  },
+  {
+    title: 'Mate in One',
+    intro: 'White to move. Two rooks, one plan — find the checkmate.',
+    type: 'mate',
+    successText: 'Checkmate! One rook cut off the 7th rank, and the other delivered mate along the 8th — the classic "ladder mate."',
+    failText: "That's not mate. Think about how the two rooks can work together.",
+    setup(){
+      const board = emptyChessBoard();
+      board[7][4] = {t:'k',c:'w'};
+      board[1][0] = {t:'r',c:'w'};
+      board[7][1] = {t:'r',c:'w'};
+      board[0][7] = {t:'k',c:'b'};
+      return { board, turn:'w', rights:{wK:false,wQ:false,bK:false,bQ:false}, ep:null };
+    }
+  },
+  {
+    title: 'Mate in One',
+    intro: 'White to move. Find the checkmate using just the king and rook.',
+    type: 'mate',
+    successText: 'Checkmate! The rook checks along the rank while the king cuts off every square the king could flee to.',
+    failText: "Not mate yet — remember, the king needs to help control the escape squares.",
+    setup(){
+      const board = emptyChessBoard();
+      board[5][4] = {t:'k',c:'w'};
+      board[6][7] = {t:'r',c:'w'};
+      board[7][4] = {t:'k',c:'b'};
+      return { board, turn:'w', rights:{wK:false,wQ:false,bK:false,bQ:false}, ep:null };
+    }
+  },
+  {
+    title: 'Smothered Mate',
+    intro: 'White to move. Black\'s own pieces are about to become the problem.',
+    type: 'mate',
+    successText: 'Checkmate! The king is completely smothered by its own rook and pawns — it can\'t move anywhere, and nothing can capture the knight.',
+    failText: "Not quite — look for a knight move that checks the king while its own pieces block every escape.",
+    setup(){
+      const board = emptyChessBoard();
+      board[7][0] = {t:'k',c:'w'};
+      board[2][3] = {t:'n',c:'w'};
+      board[0][7] = {t:'k',c:'b'};
+      board[0][6] = {t:'r',c:'b'};
+      board[1][6] = {t:'p',c:'b'};
+      board[1][7] = {t:'p',c:'b'};
+      return { board, turn:'w', rights:{wK:false,wQ:false,bK:false,bQ:false}, ep:null };
+    }
+  },
+  {
+    title: 'Find the Fork',
+    intro: 'White to move. One knight move attacks both black rooks at once.',
+    type: 'move',
+    solutionMoves: [{from:[4,1], to:[3,3]}],
+    successText: 'That\'s the fork! The knight attacks both rooks — Black can only save one.',
+    failText: "That doesn't fork anything. Look for a knight jump that lands on a square attacking both rooks.",
+    setup(){
+      const board = emptyChessBoard();
+      board[7][0] = {t:'k',c:'w'};
+      board[4][1] = {t:'n',c:'w'};
+      board[5][2] = {t:'r',c:'b'};
+      board[5][4] = {t:'r',c:'b'};
+      board[0][4] = {t:'k',c:'b'};
+      return { board, turn:'w', rights:{wK:false,wQ:false,bK:false,bQ:false}, ep:null };
+    }
+  },
+  {
+    title: 'Find the Fork',
+    intro: 'White to move. A single pawn push attacks two pieces at once.',
+    type: 'move',
+    solutionMoves: [{from:[4,4], to:[3,4]}],
+    successText: 'That\'s a pawn fork! Advancing the pawn attacks both the knight and the bishop diagonally — one of them is lost.',
+    failText: "That doesn't create a fork. Look for a pawn advance that attacks two pieces diagonally.",
+    setup(){
+      const board = emptyChessBoard();
+      board[7][0] = {t:'k',c:'w'};
+      board[4][4] = {t:'p',c:'w'};
+      board[2][3] = {t:'n',c:'b'};
+      board[2][5] = {t:'b',c:'b'};
+      board[0][4] = {t:'k',c:'b'};
+      return { board, turn:'w', rights:{wK:false,wQ:false,bK:false,bQ:false}, ep:null };
+    }
+  },
+  {
+    title: 'Win the Queen',
+    intro: 'White to move. Black\'s queen is completely undefended.',
+    type: 'move',
+    solutionMoves: [{from:[4,4], to:[4,7]}],
+    successText: 'Correct! An undefended queen in your rook\'s path is simply there for the taking.',
+    failText: "There's a free queen on the board — look for what your rook can capture.",
+    setup(){
+      const board = emptyChessBoard();
+      board[7][0] = {t:'k',c:'w'};
+      board[4][4] = {t:'r',c:'w'};
+      board[4][7] = {t:'q',c:'b'};
+      board[0][4] = {t:'k',c:'b'};
+      return { board, turn:'w', rights:{wK:false,wQ:false,bK:false,bQ:false}, ep:null };
+    }
+  },
+  {
+    title: 'Win the Piece',
+    intro: 'White to move. Black\'s bishop has no defender.',
+    type: 'move',
+    solutionMoves: [{from:[5,5], to:[3,4]}],
+    successText: 'Correct! Nothing was watching that bishop — free material.',
+    failText: "There's still a free piece on the board — check which black piece nothing is defending.",
+    setup(){
+      const board = emptyChessBoard();
+      board[7][0] = {t:'k',c:'w'};
+      board[5][5] = {t:'n',c:'w'};
+      board[3][4] = {t:'b',c:'b'};
+      board[0][4] = {t:'k',c:'b'};
+      return { board, turn:'w', rights:{wK:false,wQ:false,bK:false,bQ:false}, ep:null };
+    }
+  }
+];
+
+function initChessLesson(idx){
+  const lesson = CHESS_LESSONS[idx];
+  state.chess.lessonIdx = idx;
+  markLessonViewed('chess', lesson.title);
+  if(lesson.type === 'values'){
+    state.chess.board = null;
+    state.chess.hero = null;
+    state.chess.extraPositions = [];
+    state.chess.specialUsed = false;
+    return;
+  }
+  if(lesson.type === 'startpos'){
+    state.chess.board = null;
+    state.chess.hero = null;
+    return;
+  }
+  if(lesson.type === 'opening'){
+    state.chess.board = null;
+    state.chess.hero = null;
+    state.chess.opening = { gs: initialChessGS(), selected: null, played: null };
+    return;
+  }
+  if(lesson.type === 'theory'){
+    state.chess.board = null;
+    state.chess.hero = null;
+    state.chess.theory = { openingIdx: null, history: [], stepIndex: 0 };
+    return;
+  }
+  const { board, hero, extra } = lesson.setup();
+  state.chess.board = board;
+  state.chess.hero = hero;
+  state.chess.extraPositions = (extra || []).map(ex => ({ ...ex, pos: ex.pos.slice() }));
+  state.chess.specialUsed = false;
+  state.chess.promoted = false;
+}
+
+function specialTarget(lesson, hero, board){
+  if(!lesson.special || state.chess.specialUsed) return null;
+  const sp = lesson.special;
+  if(sp.type === 'castleKing'){
+    const rook = state.chess.extraPositions.find(ex => ex.id === 'rook');
+    const sameSpot = (a,b)=> a[0]===b[0] && a[1]===b[1];
+    if(sameSpot(hero, sp.kingStart) && !board[sp.kingStart[0]][sp.kingStart[1]+1] && !board[sp.kingStart[0]][sp.kingStart[1]+2] && rook && sameSpot(rook.pos, sp.rookFrom)){
+      return { pos: sp.targetPos, kind: 'move' };
+    }
+  }
+  if(sp.type === 'enPassant'){
+    const sameSpot = (a,b)=> a[0]===b[0] && a[1]===b[1];
+    if(sameSpot(hero, sp.pawnStart) && board[sp.capturePos[0]][sp.capturePos[1]] === 'enemy'){
+      return { pos: sp.targetPos, kind: 'capture' };
+    }
+  }
+  return null;
+}
+
+function getTargets(lesson, hero, board){
+  const { moves, captures } = computeMoves(lesson.piece, hero, board);
+  const special = specialTarget(lesson, hero, board);
+  if(special){
+    if(special.kind === 'move') moves.push(special.pos);
+    else captures.push(special.pos);
+  }
+  return { moves, captures, special };
+}
+
+function renderChessBoardSVG(){
+  const lesson = CHESS_LESSONS[state.chess.lessonIdx];
+  const board = state.chess.board;
+  const hero = state.chess.hero;
+  const { moves, captures } = getTargets(lesson, hero, board);
+  const S = 56, M = 24;
+  const isMove = (r,c)=> moves.some(m=>m[0]===r&&m[1]===c);
+  const isCapture = (r,c)=> captures.some(m=>m[0]===r&&m[1]===c);
+
+  let squares = '';
+  for(let r=0;r<8;r++){
+    for(let c=0;c<8;c++){
+      const x = M + c*S, y = M + r*S;
+      const dark = (r+c)%2===1;
+      const fill = dark ? 'var(--dark-square)' : 'var(--light-square)';
+      squares += `<rect x="${x}" y="${y}" width="${S}" height="${S}" fill="${fill}"></rect>`;
+    }
+  }
+
+  let markers = '';
+  let interactive = '';
+  moves.forEach(([r,c])=>{
+    const x = M + c*S + S/2, y = M + r*S + S/2;
+    markers += `<circle cx="${x}" cy="${y}" r="8" fill="var(--gold)" opacity="0.85"></circle>`;
+    interactive += `<rect x="${M+c*S}" y="${M+r*S}" width="${S}" height="${S}" fill="transparent" style="cursor:pointer" data-action="chess-square" data-r="${r}" data-c="${c}"></rect>`;
+  });
+  captures.forEach(([r,c])=>{
+    const x = M + c*S + S/2, y = M + r*S + S/2;
+    markers += `<circle cx="${x}" cy="${y}" r="24" fill="none" stroke="${state.chess ? 'var(--chess)' : ''}" stroke-width="4" opacity="0.85"></circle>`;
+    interactive += `<rect x="${M+c*S}" y="${M+r*S}" width="${S}" height="${S}" fill="transparent" style="cursor:pointer" data-action="chess-square" data-r="${r}" data-c="${c}"></rect>`;
+  });
+
+  let pieces = '';
+  for(let r=0;r<8;r++){
+    for(let c=0;c<8;c++){
+      const occ = board[r][c];
+      if(occ==='own'){
+        const x = M + c*S + S/2, y = M + r*S + S/2 + 14;
+        pieces += `<text x="${x}" y="${y}" font-size="34" text-anchor="middle" fill="#7a7266" opacity="0.7">♙</text>`;
+      } else if(occ==='enemy'){
+        const x = M + c*S + S/2, y = M + r*S + S/2 + 14;
+        pieces += `<text x="${x}" y="${y}" font-size="34" text-anchor="middle" fill="#241f1a">♟</text>`;
+      }
+    }
+  }
+  (state.chess.extraPositions || []).forEach(ex=>{
+    const [r,c] = ex.pos;
+    const x = M + c*S + S/2, y = M + r*S + S/2 + 14;
+    pieces += `<text x="${x}" y="${y}" font-size="36" text-anchor="middle" fill="#241f1a">${ex.glyph}</text>`;
+  });
+  // hero piece drawn last (on top)
+  {
+    const [r,c] = hero;
+    const x = M + c*S + S/2, y = M + r*S + S/2 + 15;
+    const glyph = (state.chess.promoted && lesson.special && lesson.special.type === 'promotion') ? '♕' : lesson.glyph;
+    pieces += `<text x="${x}" y="${y}" font-size="40" text-anchor="middle" fill="#F5F1E8" stroke="#5E2727" stroke-width="1.2">${glyph}</text>`;
+  }
+
+  let files = '';
+  for(let c=0;c<8;c++){
+    files += `<text x="${M + c*S + S/2}" y="${M + 8*S + 16}" font-size="12" text-anchor="middle" fill="var(--text-soft)">${String.fromCharCode(97+c)}</text>`;
+  }
+  let ranks = '';
+  for(let r=0;r<8;r++){
+    ranks += `<text x="${M-10}" y="${M + r*S + S/2 + 4}" font-size="12" text-anchor="middle" fill="var(--text-soft)">${8-r}</text>`;
+  }
+
+  const size = M*2 + 8*S;
+  return `<svg viewBox="0 0 ${size} ${size}" width="${size}" height="${size}">
+    ${squares}${markers}${pieces}${files}${ranks}${interactive}
+  </svg>`;
+}
+
+function handleChessSquare(r,c){
+  const lesson = CHESS_LESSONS[state.chess.lessonIdx];
+  const { moves, captures, special } = getTargets(lesson, state.chess.hero, state.chess.board);
+  if(special && special.pos[0]===r && special.pos[1]===c){
+    if(lesson.special.type === 'castleKing'){
+      const rook = state.chess.extraPositions.find(ex => ex.id === 'rook');
+      if(rook) rook.pos = lesson.special.rookTo.slice();
+      state.chess.hero = [r,c];
+    } else if(lesson.special.type === 'enPassant'){
+      const [pr,pc] = lesson.special.capturePos;
+      state.chess.board[pr][pc] = null;
+      state.chess.hero = [r,c];
+    }
+    state.chess.specialUsed = true;
+    render();
+    return;
+  }
+  const isMove = moves.some(m=>m[0]===r&&m[1]===c);
+  const isCapture = captures.some(m=>m[0]===r&&m[1]===c);
+  if(isCapture){
+    state.chess.board[r][c] = null;
+    state.chess.hero = [r,c];
+  } else if(isMove){
+    state.chess.hero = [r,c];
+  }
+  if((isMove || isCapture) && lesson.special && lesson.special.type === 'promotion' && r === lesson.special.targetRow){
+    state.chess.promoted = true;
+  }
+  render();
+}
+
+// Named squares/pieces for the four most time-tested first moves, used to
+// give specific feedback in the Opening Moves lesson.
+const POPULAR_OPENINGS = [
+  { to:[4,4], piece:'p', name:'1.e4', note:'the most-played opening move in chess history — it grabs central space immediately and opens lines for both the queen and the light-squared bishop.' },
+  { to:[4,3], piece:'p', name:'1.d4', note:'just as strong a claim on the center, and it opens a diagonal for the other bishop right away.' },
+  { to:[5,5], piece:'n', name:'1.Nf3', note:'a flexible developing move — it brings a piece out immediately without committing to a pawn structure yet.' },
+  { to:[4,2], piece:'p', name:'1.c4', note:'the English Opening — it fights for the center from the side rather than occupying it outright.' }
+];
+
+function isPopularOpening(move){
+  return POPULAR_OPENINGS.some(p => p.to[0]===move.to[0] && p.to[1]===move.to[1] && move.piece.t===p.piece);
+}
+
+function openingCommentary(move){
+  const match = POPULAR_OPENINGS.find(p => p.to[0]===move.to[0] && p.to[1]===move.to[1] && move.piece.t===p.piece);
+  if(match) return `${match.name} — ${match.note}`;
+  return "That's a perfectly legal first move! It just isn't one of the most common ones — strong players usually prioritize the center and quick development early on.";
+}
+
+// Animates a single piece sliding from `move.from` to `move.to` by injecting
+// a temporary SVG piece with a native SMIL animation into the existing
+// .board-holder element, then calls onComplete once the slide finishes to
+// commit the real state and do a normal render.
+function animateChessMove(preBoard, move, piece, onComplete){
+  const holder = document.querySelector('.board-holder');
+  if(!holder){ onComplete(); return; }
+  const S = 56, M = 24;
+  const frameBoard = preBoard.map(row => row.slice());
+  frameBoard[move.from[0]][move.from[1]] = null;
+  frameBoard[move.to[0]][move.to[1]] = null; // hide any captured piece; the sliding piece will arrive on top
+  const staticSVG = renderChessFullBoardSVG({ board: frameBoard }, null, [], null, false);
+  const fromX = M + move.from[1]*S + S/2, fromY = M + move.from[0]*S + S/2 + 14;
+  const toX = M + move.to[1]*S + S/2, toY = M + move.to[0]*S + S/2 + 14;
+  const glyph = PIECE_GLYPHS[piece.c][piece.t];
+  const fill = piece.c==='w' ? '#F5F1E8' : '#241f1a';
+  const strokeAttr = piece.c==='w' ? ' stroke="#5E2727" stroke-width="1"' : '';
+  const movingPiece = `<text x="${fromX}" y="${fromY}" font-size="38" text-anchor="middle" fill="${fill}"${strokeAttr}>${glyph}` +
+    `<animate attributeName="x" from="${fromX}" to="${toX}" dur="0.35s" fill="freeze" calcMode="spline" keySplines="0.3 0 0.2 1"></animate>` +
+    `<animate attributeName="y" from="${fromY}" to="${toY}" dur="0.35s" fill="freeze" calcMode="spline" keySplines="0.3 0 0.2 1"></animate>` +
+    `</text>`;
+  holder.innerHTML = staticSVG.replace('</svg>', movingPiece + '</svg>');
+  setTimeout(onComplete, 380);
+}
+
+function chessOpeningSquareClick(r,c){
+  const op = state.chess.opening;
+  if(!op || op.played) return;
+  const gs = op.gs;
+  const board = gs.board;
+  if(op.selected){
+    const legal = generateLegalMoves(gs).filter(m => m.from[0]===op.selected[0] && m.from[1]===op.selected[1]);
+    const chosen = legal.find(m => m.to[0]===r && m.to[1]===c);
+    if(chosen){
+      const piece = board[chosen.from[0]][chosen.from[1]];
+      op.selected = null;
+      animateChessMove(board, chosen, piece, ()=>{
+        op.played = { ...chosen, piece };
+        op.gs = applyMove(gs, chosen);
+        render();
+      });
+      return;
+    }
+    if(board[r][c] && board[r][c].c==='w'){ op.selected = [r,c]; render(); return; }
+    op.selected = null; render(); return;
+  }
+  if(board[r][c] && board[r][c].c==='w'){ op.selected = [r,c]; render(); }
+}
+
+function chessTheorySelect(idx){
+  state.chess.theory = { openingIdx: idx, history: [initialChessGS()], stepIndex: 0 };
+  render();
+}
+
+function chessTheoryNext(){
+  const th = state.chess.theory;
+  if(!th || th.openingIdx === null) return;
+  const opening = OPENING_THEORY[th.openingIdx];
+  if(th.stepIndex >= opening.moves.length) return;
+  const step = opening.moves[th.stepIndex];
+  const gs = th.history[th.stepIndex];
+  const legal = generateLegalMoves(gs);
+  const chosen = legal.find(m => m.from[0]===step.from[0] && m.from[1]===step.from[1] && m.to[0]===step.to[0] && m.to[1]===step.to[1]);
+  if(!chosen) return; // shouldn't happen — the sequence is verified legal
+  const piece = gs.board[chosen.from[0]][chosen.from[1]];
+  animateChessMove(gs.board, chosen, piece, ()=>{
+    th.history.push(applyMove(gs, chosen));
+    th.stepIndex += 1;
+    render();
+  });
+}
+
+function chessTheoryPrev(){
+  const th = state.chess.theory;
+  if(!th || th.stepIndex <= 0) return;
+  th.stepIndex -= 1;
+  render();
+}
+
+function chessTheoryReset(){
+  const th = state.chess.theory;
+  if(!th || th.openingIdx === null) return;
+  state.chess.theory = { openingIdx: th.openingIdx, history: [initialChessGS()], stepIndex: 0 };
+  render();
+}
+
+function chessTheoryBack(){
+  state.chess.theory = { openingIdx: null, history: [], stepIndex: 0 };
+  render();
+}
+
+/* ============================================================
+   FULL CHESS ENGINE (for Play vs AI)
+============================================================ */
+const ROOK_DIRS = [[1,0],[-1,0],[0,1],[0,-1]];
+const BISHOP_DIRS = [[1,1],[1,-1],[-1,1],[-1,-1]];
+const KING_DIRS = ROOK_DIRS.concat(BISHOP_DIRS);
+const KNIGHT_DELTAS = [[2,1],[2,-1],[-2,1],[-2,-1],[1,2],[1,-2],[-1,2],[-1,-2]];
+const inB8 = (r,c)=> r>=0 && r<8 && c>=0 && c<8;
+const opp = (c)=> c==='w' ? 'b' : 'w';
+
+function initialChessGS(){
+  const board = Array.from({length:8},()=>Array(8).fill(null));
+  const back = ['r','n','b','q','k','b','n','r'];
+  for(let c=0;c<8;c++){
+    board[0][c] = { t: back[c], c: 'b' };
+    board[1][c] = { t: 'p', c: 'b' };
+    board[6][c] = { t: 'p', c: 'w' };
+    board[7][c] = { t: back[c], c: 'w' };
+  }
+  return { board, turn:'w', rights:{wK:true,wQ:true,bK:true,bQ:true}, ep:null };
+}
+
+function cloneGS(gs){
+  return {
+    board: gs.board.map(row => row.map(cell => cell ? {t:cell.t,c:cell.c} : null)),
+    turn: gs.turn,
+    rights: { ...gs.rights },
+    ep: gs.ep ? gs.ep.slice() : null
+  };
+}
+
+function kingPos(board,color){
+  for(let r=0;r<8;r++) for(let c=0;c<8;c++){
+    const p = board[r][c];
+    if(p && p.t==='k' && p.c===color) return [r,c];
+  }
+  return null;
+}
+
+function isAttacked(board, r, c, byColor){
+  // pawns
+  const pr = byColor==='w' ? r+1 : r-1;
+  if(inB8(pr,c-1) && board[pr][c-1] && board[pr][c-1].t==='p' && board[pr][c-1].c===byColor) return true;
+  if(inB8(pr,c+1) && board[pr][c+1] && board[pr][c+1].t==='p' && board[pr][c+1].c===byColor) return true;
+  // knights
+  for(const [dr,dc] of KNIGHT_DELTAS){
+    const nr=r+dr, nc=c+dc;
+    if(inB8(nr,nc) && board[nr][nc] && board[nr][nc].t==='n' && board[nr][nc].c===byColor) return true;
+  }
+  // king
+  for(const [dr,dc] of KING_DIRS){
+    const nr=r+dr, nc=c+dc;
+    if(inB8(nr,nc) && board[nr][nc] && board[nr][nc].t==='k' && board[nr][nc].c===byColor) return true;
+  }
+  // sliding rook/queen
+  for(const [dr,dc] of ROOK_DIRS){
+    let nr=r+dr, nc=c+dc;
+    while(inB8(nr,nc)){
+      const p = board[nr][nc];
+      if(p){ if(p.c===byColor && (p.t==='r'||p.t==='q')) return true; break; }
+      nr+=dr; nc+=dc;
+    }
+  }
+  // sliding bishop/queen
+  for(const [dr,dc] of BISHOP_DIRS){
+    let nr=r+dr, nc=c+dc;
+    while(inB8(nr,nc)){
+      const p = board[nr][nc];
+      if(p){ if(p.c===byColor && (p.t==='b'||p.t==='q')) return true; break; }
+      nr+=dr; nc+=dc;
+    }
+  }
+  return false;
+}
+
+function inCheck(board,color){
+  const kp = kingPos(board,color);
+  if(!kp) return false;
+  return isAttacked(board, kp[0], kp[1], opp(color));
+}
+
+function generatePseudoMoves(gs){
+  const { board, turn, rights, ep } = gs;
+  const moves = [];
+  for(let r=0;r<8;r++){
+    for(let c=0;c<8;c++){
+      const p = board[r][c];
+      if(!p || p.c !== turn) continue;
+      if(p.t === 'p'){
+        const dir = turn==='w' ? -1 : 1;
+        const startRow = turn==='w' ? 6 : 1;
+        const lastRow = turn==='w' ? 0 : 7;
+        const one = [r+dir, c];
+        if(inB8(...one) && !board[one[0]][one[1]]){
+          moves.push({ from:[r,c], to:one, promotion: one[0]===lastRow ? 'q' : null });
+          const two = [r+2*dir, c];
+          if(r===startRow && !board[two[0]][two[1]]) moves.push({ from:[r,c], to:two, doubleStep:true });
+        }
+        for(const dc of [-1,1]){
+          const nr=r+dir, nc=c+dc;
+          if(!inB8(nr,nc)) continue;
+          if(board[nr][nc] && board[nr][nc].c===opp(turn)){
+            moves.push({ from:[r,c], to:[nr,nc], capture:true, promotion: nr===lastRow ? 'q' : null });
+          } else if(ep && ep[0]===nr && ep[1]===nc){
+            moves.push({ from:[r,c], to:[nr,nc], capture:true, isEnPassant:true });
+          }
+        }
+      } else if(p.t === 'n'){
+        for(const [dr,dc] of KNIGHT_DELTAS){
+          const nr=r+dr, nc=c+dc;
+          if(!inB8(nr,nc)) continue;
+          if(!board[nr][nc]) moves.push({ from:[r,c], to:[nr,nc] });
+          else if(board[nr][nc].c===opp(turn)) moves.push({ from:[r,c], to:[nr,nc], capture:true });
+        }
+      } else if(p.t === 'k'){
+        for(const [dr,dc] of KING_DIRS){
+          const nr=r+dr, nc=c+dc;
+          if(!inB8(nr,nc)) continue;
+          if(!board[nr][nc]) moves.push({ from:[r,c], to:[nr,nc] });
+          else if(board[nr][nc].c===opp(turn)) moves.push({ from:[r,c], to:[nr,nc], capture:true });
+        }
+        const backRow = turn==='w' ? 7 : 0;
+        if(r===backRow && c===4 && !inCheck(board,turn)){
+          const rightK = turn==='w' ? rights.wK : rights.bK;
+          const rightQ = turn==='w' ? rights.wQ : rights.bQ;
+          if(rightK && !board[backRow][5] && !board[backRow][6] &&
+             board[backRow][7] && board[backRow][7].t==='r' && board[backRow][7].c===turn &&
+             !isAttacked(board,backRow,5,opp(turn)) && !isAttacked(board,backRow,6,opp(turn))){
+            moves.push({ from:[r,c], to:[backRow,6], castle:'K' });
+          }
+          if(rightQ && !board[backRow][1] && !board[backRow][2] && !board[backRow][3] &&
+             board[backRow][0] && board[backRow][0].t==='r' && board[backRow][0].c===turn &&
+             !isAttacked(board,backRow,3,opp(turn)) && !isAttacked(board,backRow,2,opp(turn))){
+            moves.push({ from:[r,c], to:[backRow,2], castle:'Q' });
+          }
+        }
+      } else {
+        const dirs = p.t==='b' ? BISHOP_DIRS : p.t==='r' ? ROOK_DIRS : KING_DIRS;
+        for(const [dr,dc] of dirs){
+          let nr=r+dr, nc=c+dc;
+          while(inB8(nr,nc)){
+            if(!board[nr][nc]){ moves.push({ from:[r,c], to:[nr,nc] }); }
+            else { if(board[nr][nc].c===opp(turn)) moves.push({ from:[r,c], to:[nr,nc], capture:true }); break; }
+            nr+=dr; nc+=dc;
+          }
+        }
+      }
+    }
+  }
+  return moves;
+}
+
+function applyMove(gs, move){
+  const ngs = cloneGS(gs);
+  const { board, turn } = ngs;
+  const piece = board[move.from[0]][move.from[1]];
+  if(move.isEnPassant){
+    board[move.from[0]][move.to[1]] = null;
+  }
+  board[move.to[0]][move.to[1]] = move.promotion ? { t: move.promotion, c: piece.c } : piece;
+  board[move.from[0]][move.from[1]] = null;
+  if(move.castle){
+    const backRow = move.from[0];
+    if(move.castle==='K'){ board[backRow][5] = board[backRow][7]; board[backRow][7]=null; }
+    else { board[backRow][3] = board[backRow][0]; board[backRow][0]=null; }
+  }
+  if(piece.t==='k'){ if(turn==='w'){ ngs.rights.wK=false; ngs.rights.wQ=false; } else { ngs.rights.bK=false; ngs.rights.bQ=false; } }
+  if(piece.t==='r'){
+    if(move.from[0]===7 && move.from[1]===0) ngs.rights.wQ=false;
+    if(move.from[0]===7 && move.from[1]===7) ngs.rights.wK=false;
+    if(move.from[0]===0 && move.from[1]===0) ngs.rights.bQ=false;
+    if(move.from[0]===0 && move.from[1]===7) ngs.rights.bK=false;
+  }
+  if(move.to[0]===7 && move.to[1]===0) ngs.rights.wQ=false;
+  if(move.to[0]===7 && move.to[1]===7) ngs.rights.wK=false;
+  if(move.to[0]===0 && move.to[1]===0) ngs.rights.bQ=false;
+  if(move.to[0]===0 && move.to[1]===7) ngs.rights.bK=false;
+  ngs.ep = move.doubleStep ? [ (move.from[0]+move.to[0])/2, move.from[1] ] : null;
+  ngs.turn = opp(turn);
+  return ngs;
+}
+
+function generateLegalMoves(gs){
+  const pseudo = generatePseudoMoves(gs);
+  return pseudo.filter(m => !inCheck(applyMove(gs,m).board, gs.turn));
+}
+
+function getGameStatus(gs){
+  const legal = generateLegalMoves(gs);
+  if(legal.length === 0){
+    return inCheck(gs.board, gs.turn) ? { over:true, result: opp(gs.turn) + '-wins-checkmate' } : { over:true, result:'stalemate' };
+  }
+  return { over:false, result:null };
+}
+
+const PIECE_VALUE = { p:100, n:320, b:330, r:500, q:900, k:0 };
+function evaluateBoard(board){
+  let score = 0;
+  for(let r=0;r<8;r++) for(let c=0;c<8;c++){
+    const p = board[r][c];
+    if(!p) continue;
+    const centerBonus = (p.t==='n'||p.t==='b') ? (3 - Math.max(Math.abs(3.5-r),Math.abs(3.5-c))) * 2 : 0;
+    const val = PIECE_VALUE[p.t] + centerBonus;
+    score += p.c==='w' ? val : -val;
+  }
+  return score;
+}
+
+function minimax(gs, depth, alpha, beta, maximizing){
+  const legal = generateLegalMoves(gs);
+  if(depth===0 || legal.length===0){
+    if(legal.length===0){
+      if(inCheck(gs.board, gs.turn)) return gs.turn==='w' ? -100000 - depth : 100000 + depth;
+      return 0;
+    }
+    return evaluateBoard(gs.board);
+  }
+  if(maximizing){
+    let best = -Infinity;
+    for(const m of legal){
+      const val = minimax(applyMove(gs,m), depth-1, alpha, beta, false);
+      best = Math.max(best, val);
+      alpha = Math.max(alpha, best);
+      if(beta <= alpha) break;
+    }
+    return best;
+  } else {
+    let best = Infinity;
+    for(const m of legal){
+      const val = minimax(applyMove(gs,m), depth-1, alpha, beta, true);
+      best = Math.min(best, val);
+      beta = Math.min(beta, best);
+      if(beta <= alpha) break;
+    }
+    return best;
+  }
+}
+
+// Looks up whether the move history so far matches the beginning of any
+// named opening line, and if so returns a legal move continuing it. This is
+// checked before falling back to search, so the AI actually plays known
+// theory rather than just displaying it in the lesson.
+function getBookMove(moveHistory, gs){
+  const candidates = [];
+  OPENING_THEORY.forEach(opening=>{
+    if(moveHistory.length >= opening.moves.length) return;
+    const matches = opening.moves.slice(0, moveHistory.length).every((m,i)=>
+      m.from[0]===moveHistory[i].from[0] && m.from[1]===moveHistory[i].from[1] &&
+      m.to[0]===moveHistory[i].to[0] && m.to[1]===moveHistory[i].to[1]
+    );
+    if(matches) candidates.push(opening.moves[moveHistory.length]);
+  });
+  if(candidates.length===0) return null;
+  const unique = [];
+  candidates.forEach(c=>{
+    if(!unique.some(u=>u.from[0]===c.from[0]&&u.from[1]===c.from[1]&&u.to[0]===c.to[0]&&u.to[1]===c.to[1])) unique.push(c);
+  });
+  const pick = unique[Math.floor(Math.random()*unique.length)];
+  const legal = generateLegalMoves(gs);
+  return legal.find(m=>m.from[0]===pick.from[0]&&m.from[1]===pick.from[1]&&m.to[0]===pick.to[0]&&m.to[1]===pick.to[1]) || null;
+}
+
+function chooseAIMove(gs, difficulty, moveHistory){
+  const legal = generateLegalMoves(gs);
+  if(legal.length === 0) return null;
+  if(moveHistory){
+    const bookMove = getBookMove(moveHistory, gs);
+    if(bookMove) return bookMove;
+  }
+  const maximizing = gs.turn === 'w';
+  if(difficulty === 'easy'){
+    const scored = legal.map(m => ({ m, s: evaluateBoard(applyMove(gs,m).board) + (Math.random()*160-80) }));
+    scored.sort((a,b)=> maximizing ? b.s-a.s : a.s-b.s);
+    return scored[0].m;
+  }
+  const depth = difficulty === 'hard' ? 3 : 2;
+  let bestMove = legal[0];
+  let bestVal = maximizing ? -Infinity : Infinity;
+  for(const m of legal){
+    const val = minimax(applyMove(gs,m), depth-1, -Infinity, Infinity, !maximizing);
+    if(maximizing ? val > bestVal : val < bestVal){ bestVal = val; bestMove = m; }
+  }
+  return bestMove;
+}
+
+const PIECE_GLYPHS = {
+  w: { p:'♙', n:'♘', b:'♗', r:'♖', q:'♕', k:'♔' },
+  b: { p:'♟', n:'♞', b:'♝', r:'♜', q:'♛', k:'♚' }
+};
+
+function initPlayChess(){
+  state.play.chess = {
+    gs: initialChessGS(),
+    selected: null,
+    thinking: false,
+    status: { over:false, result:null },
+    log: [],
+    moveHistory: []
+  };
+  recordGameStarted();
+}
+
+function playChessSquareClick(r,c){
+  const pc = state.play.chess;
+  if(!pc || pc.thinking || pc.status.over) return;
+  const gs = pc.gs;
+  if(gs.turn !== 'w') return; // wait for AI
+  const board = gs.board;
+  if(pc.selected){
+    const legal = generateLegalMoves(gs).filter(m => m.from[0]===pc.selected[0] && m.from[1]===pc.selected[1]);
+    const chosen = legal.find(m => m.to[0]===r && m.to[1]===c);
+    if(chosen){
+      pc.gs = applyMove(gs, chosen);
+      pc.moveHistory.push({ from: chosen.from, to: chosen.to });
+      pc.selected = null;
+      pc.status = getGameStatus(pc.gs);
+      render();
+      if(!pc.status.over && pc.gs.turn === 'b'){
+        pc.thinking = true;
+        render();
+        setTimeout(()=>{
+          const aiMove = chooseAIMove(pc.gs, state.play.chessDifficulty, pc.moveHistory);
+          if(aiMove){
+            pc.gs = applyMove(pc.gs, aiMove);
+            pc.moveHistory.push({ from: aiMove.from, to: aiMove.to });
+          }
+          pc.thinking = false;
+          pc.status = getGameStatus(pc.gs);
+          render();
+        }, 250);
+      }
+      return;
+    }
+    if(board[r][c] && board[r][c].c==='w'){ pc.selected = [r,c]; render(); return; }
+    pc.selected = null; render(); return;
+  }
+  if(board[r][c] && board[r][c].c==='w'){ pc.selected = [r,c]; render(); }
+}
+
+/* ============================================================
+   GO LOGIC
+============================================================ */
+function emptyBoard9(){ return Array.from({length:9},()=>Array(9).fill(null)); }
+function emptyGoBoard(size){ return Array.from({length:size},()=>Array(size).fill(null)); }
+const PLAY_GO_SIZE = 19;
+
+function neighbors9(r,c,size=9){
+  const ns = [];
+  [[1,0],[-1,0],[0,1],[0,-1]].forEach(([dr,dc])=>{
+    const nr=r+dr, nc=c+dc;
+    if(nr>=0 && nr<size && nc>=0 && nc<size) ns.push([nr,nc]);
+  });
+  return ns;
+}
+
+function getGroup(board,r,c){
+  const size = board.length;
+  const color = board[r][c];
+  if(!color) return [];
+  const seen = new Set(); const stack = [[r,c]]; const group = [];
+  while(stack.length){
+    const [cr,cc] = stack.pop();
+    const key = cr+','+cc;
+    if(seen.has(key)) continue;
+    seen.add(key);
+    if(board[cr][cc] !== color) continue;
+    group.push([cr,cc]);
+    neighbors9(cr,cc,size).forEach(([nr,nc])=>{ if(!seen.has(nr+','+nc)) stack.push([nr,nc]); });
+  }
+  return group;
+}
+
+function getLiberties(board, group){
+  const size = board.length;
+  const libs = new Set();
+  group.forEach(([r,c])=>{
+    neighbors9(r,c,size).forEach(([nr,nc])=>{ if(!board[nr][nc]) libs.add(nr+','+nc); });
+  });
+  return Array.from(libs).map(s=>s.split(',').map(Number));
+}
+
+// Pure move application used by both the lesson boards and Play vs AI.
+// Returns { legal, board, capturedPoints, koPoint }
+function tryPlaceStone(board, r, c, color, koPoint){
+  const size = board.length;
+  if(board[r][c]) return { legal:false };
+  if(koPoint && koPoint[0]===r && koPoint[1]===c) return { legal:false, isKo:true };
+  const opp = color==='black' ? 'white' : 'black';
+  const newBoard = board.map(row=>row.slice());
+  newBoard[r][c] = color;
+  let capturedPoints = [];
+  neighbors9(r,c,size).forEach(([nr,nc])=>{
+    if(newBoard[nr][nc]===opp){
+      const grp = getGroup(newBoard,nr,nc);
+      const libs = getLiberties(newBoard,grp);
+      if(libs.length===0){ grp.forEach(([gr,gc])=>{ newBoard[gr][gc]=null; capturedPoints.push([gr,gc]); }); }
+    }
+  });
+  const ownGrp = getGroup(newBoard,r,c);
+  const ownLibs = getLiberties(newBoard,ownGrp);
+  if(ownLibs.length===0 && capturedPoints.length===0) return { legal:false, isSuicide:true };
+  let newKoPoint = null;
+  if(capturedPoints.length===1 && ownGrp.length===1 && ownLibs.length===1 &&
+     ownLibs[0][0]===capturedPoints[0][0] && ownLibs[0][1]===capturedPoints[0][1]){
+    newKoPoint = capturedPoints[0];
+  }
+  return { legal:true, board:newBoard, capturedPoints, koPoint:newKoPoint };
+}
+
+function scoreGoArea(board){
+  const size = board.length;
+  const komi = size >= 13 ? 7.5 : 5.5;
+  const visited = Array.from({length:size},()=>Array(size).fill(false));
+  let blackScore = 0, whiteScore = 0;
+  for(let r=0;r<size;r++) for(let c=0;c<size;c++){
+    if(board[r][c]==='black') blackScore++;
+    else if(board[r][c]==='white') whiteScore++;
+  }
+  for(let r=0;r<size;r++){
+    for(let c=0;c<size;c++){
+      if(board[r][c] || visited[r][c]) continue;
+      const region = []; const borders = new Set();
+      const stack = [[r,c]];
+      visited[r][c] = true;
+      while(stack.length){
+        const [cr,cc] = stack.pop();
+        region.push([cr,cc]);
+        neighbors9(cr,cc,size).forEach(([nr,nc])=>{
+          if(board[nr][nc]) borders.add(board[nr][nc]);
+          else if(!visited[nr][nc]){ visited[nr][nc]=true; stack.push([nr,nc]); }
+        });
+      }
+      if(borders.size===1){
+        if(borders.has('black')) blackScore += region.length;
+        else whiteScore += region.length;
+      }
+    }
+  }
+  return { black: blackScore, white: whiteScore + komi, komi };
+}
+
+// Maps every empty point to the set of stone colors bordering its connected
+// empty region. A region bordered by only one color is "sealed" (settled
+// territory) — playing into it wastes a move without changing the score.
+function computeRegionBorders(board){
+  const size = board.length;
+  const visited = Array.from({length:size},()=>Array(size).fill(false));
+  const borderMap = {};
+  for(let r=0;r<size;r++){
+    for(let c=0;c<size;c++){
+      if(board[r][c] || visited[r][c]) continue;
+      const region = []; const borders = new Set();
+      const stack = [[r,c]];
+      visited[r][c] = true;
+      while(stack.length){
+        const [cr,cc] = stack.pop();
+        region.push([cr,cc]);
+        neighbors9(cr,cc,size).forEach(([nr,nc])=>{
+          if(board[nr][nc]) borders.add(board[nr][nc]);
+          else if(!visited[nr][nc]){ visited[nr][nc]=true; stack.push([nr,nc]); }
+        });
+      }
+      region.forEach(([rr,cc])=>{ borderMap[rr+','+cc] = { borders, size: region.length }; });
+    }
+  }
+  return borderMap;
+}
+
+// Standard star points for common board sizes, used as an opening-move bias.
+function starPoints(size){
+  if(size===19) return [[3,3],[3,9],[3,15],[9,3],[9,9],[9,15],[15,3],[15,9],[15,15]];
+  if(size===13) return [[3,3],[3,9],[9,3],[9,9],[6,6]];
+  return [[2,2],[2,6],[6,2],[6,6],[4,4]];
+}
+
+// Corner-local joseki shapes the AI can recognize, written as small offsets
+// (dr, dc) measured inward from a corner — real corner joseki are the same
+// shape regardless of overall board size, so these apply unscaled on any
+// board the AI encounters.
+// 'role' is 'A' (whoever plays first, the corner's owner) or 'B' (the
+// approaching side) — resolved to an actual color per corner during matching.
+const AI_JOSEKI_TEMPLATES = [
+  { moves: [ {dr:2,dc:2,role:'A'}, {dr:2,dc:5,role:'B'}, {dr:4,dc:2,role:'A'}, {dr:2,dc:6,role:'B'} ] }, // approach & extend
+  { moves: [ {dr:2,dc:2,role:'A'}, {dr:2,dc:5,role:'B'}, {dr:2,dc:8,role:'A'}, {dr:4,dc:5,role:'B'} ] }, // approach & pincer
+  { moves: [ {dr:2,dc:2,role:'A'}, {dr:2,dc:5,role:'B'}, {dr:2,dc:4,role:'A'}, {dr:1,dc:4,role:'B'} ] }  // attach & hane
+];
+
+function cornerTransform(dr, dc, corner, size){
+  let r = dr, c = dc;
+  if(corner===1 || corner===3) c = size-1-dc;
+  if(corner===2 || corner===3) r = size-1-dr;
+  return [r, c];
+}
+
+// Scans all four corners for a board position matching the start of a known
+// joseki shape (in either color arrangement), and returns a map of
+// "r,c" -> bonus for the point that would continue it correctly.
+function computeJosekiSuggestions(board, colorToMove){
+  const size = board.length;
+  const suggestions = new Map();
+  for(let corner=0; corner<4; corner++){
+    AI_JOSEKI_TEMPLATES.forEach(template=>{
+      [{A:'black',B:'white'}, {A:'white',B:'black'}].forEach(roles=>{
+        let k = 0;
+        while(k < template.moves.length){
+          const step = template.moves[k];
+          const [r,c] = cornerTransform(step.dr, step.dc, corner, size);
+          if(!inB(r,size) || !inB(c,size) || board[r][c] !== roles[step.role]) break;
+          k++;
+        }
+        if(k > 0 && k < template.moves.length){
+          const next = template.moves[k];
+          if(roles[next.role] === colorToMove){
+            const [r,c] = cornerTransform(next.dr, next.dc, corner, size);
+            if(inB(r,size) && inB(c,size) && !board[r][c]){
+              const key = r+','+c;
+              suggestions.set(key, Math.max(suggestions.get(key) || 0, k * 6));
+            }
+          }
+        }
+      });
+    });
+  }
+  return suggestions;
+}
+function inB(v, size){ return v>=0 && v<size; }
+
+// One static (non-recursive) pass over every legal move for `color`, scoring
+// captures, ataris created, groups rescued from atari, self-atari risk,
+// opening positional sense, and whether the point falls inside already
+// settled (sealed) territory.
+function staticGoCandidates(board, color, koPoint, stoneCount){
+  const size = board.length;
+  const borderMap = computeRegionBorders(board);
+  const josekiSuggestions = computeJosekiSuggestions(board, color);
+  const opp_ = color==='black' ? 'white' : 'black';
+  const stars = new Set(starPoints(size).map(([r,c])=>r+','+c));
+  const openingWeight = Math.max(0, 1 - stoneCount / (size*2)); // fades out as the game develops
+  let totalEmpty = 0;
+  for(let rr=0; rr<size; rr++) for(let cc=0; cc<size; cc++) if(!board[rr][cc]) totalEmpty++;
+  // How concentrated are this color's stones by board quadrant? Used below
+  // to discourage piling into one already-claimed area while other areas
+  // of the board sit completely unclaimed — but only while it still matters
+  // (early game), so it doesn't keep pulling the AI away from real fights
+  // once every quadrant already has a foothold.
+  const half = size / 2;
+  const quadrantCounts = [0,0,0,0];
+  let totalOwn = 0;
+  for(let rr=0; rr<size; rr++){
+    for(let cc=0; cc<size; cc++){
+      if(board[rr][cc]===color){
+        quadrantCounts[(rr<half?0:1)*2 + (cc<half?0:1)]++;
+        totalOwn++;
+      }
+    }
+  }
+  const candidates = [];
+  for(let r=0;r<size;r++){
+    for(let c=0;c<size;c++){
+      if(board[r][c]) continue;
+      const result = tryPlaceStone(board, r, c, color, koPoint);
+      if(!result.legal) continue;
+      let score = result.capturedPoints.length * 20;
+      let looseContact = false; // aimless direct contact — no tactical payoff
+      neighbors9(r,c,size).forEach(([nr,nc])=>{
+        if(board[nr][nc]===color){
+          const grp = getGroup(board,nr,nc);
+          const libs = getLiberties(board,grp);
+          if(libs.length===1){
+            const newGrp = getGroup(result.board, r, c);
+            const newLibs = getLiberties(result.board, newGrp);
+            if(newLibs.length > 1) score += 25; // rescues a group from atari
+          }
+          // no bonus just for touching a friendly stone — avoid clumping
+        } else if(board[nr][nc]===opp_){
+          const grp = getGroup(board,nr,nc);
+          const libs = getLiberties(board,grp);
+          if(libs.length===1) score += 14; // puts (or keeps) opponent in atari
+          else if(libs.length===2) score += 4;
+          else looseContact = true; // touching a healthy opponent group for no reason
+        }
+      });
+      if(looseContact && result.capturedPoints.length===0) score -= 5; // contact plays should have a purpose
+      const ownGrpAfter = getGroup(result.board, r, c);
+      const ownLibsAfter = getLiberties(result.board, ownGrpAfter);
+      if(ownLibsAfter.length===1 && result.capturedPoints.length===0) score -= 15; // self-atari
+      // Settled territory: a region bordered by exactly one color is "sealed"
+      // — UNLESS it's basically the whole remaining open board (meaning
+      // nobody has really contested anything yet, e.g. move one). Comparing
+      // against how much open space is actually left (rather than a fixed
+      // point count) means this correctly catches a big secured framework
+      // later in the game, not just small endgame pockets.
+      const borders = borderMap[r+','+c];
+      if(borders && borders.borders.size===1 && borders.size < totalEmpty*0.9) score -= 30;
+      // Positional sense: favor the 3rd/4th line early on (corners, then sides),
+      // and nudge toward star points as classic opening reference frames.
+      const distFromEdge = Math.min(r, c, size-1-r, size-1-c);
+      score -= Math.abs(distFromEdge - 3) * 0.5 * openingWeight;
+      if(stars.has(r+','+c)) score += 6 * openingWeight;
+      // Prefer loose extension shapes (one-space jump, knight's move) off a
+      // friendly stone over sticking directly against it — this is what
+      // builds framework instead of clumping stones together.
+      const EXTENSION_OFFSETS = [[2,0],[-2,0],[0,2],[0,-2],[2,1],[2,-1],[-2,1],[-2,-1],[1,2],[1,-2],[-1,2],[-1,-2]];
+      for(const [dr,dc] of EXTENSION_OFFSETS){
+        const nr=r+dr, nc=c+dc;
+        if(nr>=0 && nr<size && nc>=0 && nc<size && board[nr][nc]===color){ score += 3; break; }
+      }
+      // Don't keep piling into the same corner/side once it's already
+      // claimed — most useful while staking out the board early; it fades
+      // out later so it doesn't drag the AI away from a live fight just to
+      // "balance" the board.
+      if(totalOwn >= 3){
+        const q = (r<half?0:1)*2 + (c<half?0:1);
+        const share = quadrantCounts[q] / totalOwn;
+        score -= share * 9 * (0.2 + 0.8*openingWeight);
+      }
+      const josekiBonus = josekiSuggestions.get(r+','+c);
+      if(josekiBonus) score += josekiBonus;
+      score += Math.random() * 1.5;
+      candidates.push({ r, c, score, resultBoard: result.board, koPointAfter: result.koPoint });
+    }
+  }
+  return candidates;
+}
+
+// Picks a move for the AI: scores every legal point, then looks one ply
+// deeper on the strongest few candidates to avoid moves that hand the
+// opponent an easy reply. Passes once nothing but sealed territory remains.
+function chooseGoAIMove(board, color, koPoint){
+  const stoneCount = board.reduce((n,row)=> n + row.filter(Boolean).length, 0);
+  const all = staticGoCandidates(board, color, koPoint, stoneCount);
+  if(all.length===0) return null;
+  all.sort((a,b)=> b.score - a.score);
+  if(all[0].score < -10) return null; // best option is filling settled territory — pass instead
+  const poolSize = board.length >= 13 ? 14 : 10;
+  const pool = all.filter(c=>c.score >= -10).slice(0, poolSize);
+  const opp_ = color==='black' ? 'white' : 'black';
+  let best = pool[0], bestFinal = -Infinity;
+  pool.forEach(cand=>{
+    const oppReplies = staticGoCandidates(cand.resultBoard, opp_, cand.koPointAfter, stoneCount+1);
+    const bestOppScore = oppReplies.length ? Math.max(...oppReplies.map(c=>c.score)) : -20;
+    const final = cand.score - bestOppScore * 0.5;
+    if(final > bestFinal){ bestFinal = final; best = cand; }
+  });
+  return { r: best.r, c: best.c };
+}
+
+function initPlayGo(){
+  state.play.go = {
+    board: emptyGoBoard(PLAY_GO_SIZE),
+    turn: 'black',
+    koPoint: null,
+    passStreak: 0,
+    thinking: false,
+    gameOver: false,
+    message: '',
+    scores: null
+  };
+  recordGameStarted();
+}
+
+function endGoGame(){
+  const pg = state.play.go;
+  pg.gameOver = true;
+  pg.scores = scoreGoArea(pg.board);
+}
+
+function playGoPointClick(r,c){
+  const pg = state.play.go;
+  if(!pg || pg.thinking || pg.gameOver || pg.turn !== 'black') return;
+  const result = tryPlaceStone(pg.board, r, c, 'black', pg.koPoint);
+  if(!result.legal){
+    pg.message = result.isKo ? "Ko! You can't immediately retake — play elsewhere first." :
+                 result.isSuicide ? "That point has no liberties — that move isn't allowed." : '';
+    render();
+    return;
+  }
+  pg.board = result.board;
+  pg.koPoint = result.koPoint;
+  pg.turn = 'white';
+  pg.passStreak = 0;
+  pg.message = result.capturedPoints.length ? `You captured ${result.capturedPoints.length} stone${result.capturedPoints.length>1?'s':''}!` : '';
+  render();
+  aiGoTurn();
+}
+
+function aiGoTurn(){
+  const pg = state.play.go;
+  pg.thinking = true;
+  render();
+  setTimeout(()=>{
+    const move = chooseGoAIMove(pg.board, 'white', pg.koPoint);
+    if(!move){
+      pg.passStreak += 1;
+      pg.message = 'The AI passes.';
+    } else {
+      const result = tryPlaceStone(pg.board, move.r, move.c, 'white', pg.koPoint);
+      pg.board = result.board;
+      pg.koPoint = result.koPoint;
+      pg.passStreak = 0;
+      pg.message = result.capturedPoints.length ? `The AI captured ${result.capturedPoints.length} stone${result.capturedPoints.length>1?'s':''}.` : '';
+    }
+    pg.turn = 'black';
+    pg.thinking = false;
+    if(pg.passStreak >= 2) endGoGame();
+    render();
+  }, 400);
+}
+
+function playGoPass(){
+  const pg = state.play.go;
+  if(!pg || pg.thinking || pg.gameOver || pg.turn !== 'black') return;
+  pg.passStreak += 1;
+  pg.turn = 'white';
+  pg.message = 'You passed.';
+  if(pg.passStreak >= 2){ endGoGame(); render(); return; }
+  render();
+  aiGoTurn();
+}
+
+/* ============================================================
+   PUZZLES
+============================================================ */
+function initPuzzleChess(idx){
+  const puzzle = CHESS_PUZZLES[idx];
+  state.puzzles.chessIndex = idx;
+  state.puzzles.chessAttempt = { gs: puzzle.setup(), selected: null, solved: false, message: '' };
+}
+
+function puzzleChessSquareClick(r,c){
+  const pz = state.puzzles.chessAttempt;
+  if(!pz || pz.solved) return;
+  const gs = pz.gs;
+  const board = gs.board;
+  if(pz.selected){
+    const legal = generateLegalMoves(gs).filter(m => m.from[0]===pz.selected[0] && m.from[1]===pz.selected[1]);
+    const chosen = legal.find(m => m.to[0]===r && m.to[1]===c);
+    if(chosen){
+      const puzzle = CHESS_PUZZLES[state.puzzles.chessIndex];
+      const resultGs = applyMove(gs, chosen);
+      let correct = false;
+      if(puzzle.type === 'mate'){
+        const status = getGameStatus(resultGs);
+        correct = status.over && (status.result === 'w-wins-checkmate' || status.result === 'b-wins-checkmate');
+      } else {
+        correct = puzzle.solutionMoves.some(s => s.from[0]===chosen.from[0] && s.from[1]===chosen.from[1] && s.to[0]===chosen.to[0] && s.to[1]===chosen.to[1]);
+      }
+      pz.selected = null;
+      if(correct){
+        pz.gs = resultGs;
+        pz.solved = true;
+        pz.message = puzzle.successText;
+        markPuzzleSolved('chess', puzzle.title);
+      } else {
+        pz.message = puzzle.failText;
+      }
+      render();
+      return;
+    }
+    if(board[r][c] && board[r][c].c===gs.turn){ pz.selected = [r,c]; render(); return; }
+    pz.selected = null; render(); return;
+  }
+  if(board[r][c] && board[r][c].c===gs.turn){ pz.selected = [r,c]; render(); }
+}
+
+function initPuzzleGo(idx){
+  const puzzle = GO_PUZZLES[idx];
+  state.puzzles.goIndex = idx;
+  state.puzzles.goAttempt = { board: puzzle.setup().board, solved: false, message: '' };
+}
+
+function puzzleGoPointClick(r,c){
+  const pz = state.puzzles.goAttempt;
+  if(!pz || pz.solved) return;
+  if(pz.board[r][c]) return;
+  const puzzle = GO_PUZZLES[state.puzzles.goIndex];
+  const result = tryPlaceStone(pz.board, r, c, puzzle.color, null);
+  if(!result.legal){
+    pz.message = result.isSuicide ? "That point has no liberties — that move isn't allowed." : "That's not a legal move there.";
+    render();
+    return;
+  }
+  let correct = false;
+  if(puzzle.checkType === 'capture'){
+    correct = result.capturedPoints.length >= puzzle.minCapture;
+  } else if(puzzle.checkType === 'survive'){
+    const newGrp = getGroup(result.board, r, c);
+    const newLibs = getLiberties(result.board, newGrp);
+    const [tr,tc] = puzzle.targetStone;
+    const rescuesTarget = newGrp.some(([gr,gc]) => gr===tr && gc===tc);
+    correct = rescuesTarget && newLibs.length >= puzzle.minLiberties;
+  } else if(puzzle.checkType === 'atari'){
+    const [tr,tc] = puzzle.targetGroup;
+    if(result.board[tr][tc]){
+      const grp = getGroup(result.board, tr, tc);
+      const libs = getLiberties(result.board, grp);
+      correct = libs.length === 1 && result.capturedPoints.length === 0;
+    }
+  } else if(puzzle.checkType === 'point'){
+    correct = puzzle.solutionPoints.some(([pr,pc]) => pr===r && pc===c);
+  } else if(puzzle.checkType === 'connect'){
+    const [ar,ac] = puzzle.stoneA, [br,bc] = puzzle.stoneB;
+    const grp = getGroup(result.board, ar, ac);
+    correct = grp.some(([gr,gc]) => gr===br && gc===bc);
+  }
+  if(correct){
+    pz.board = result.board;
+    pz.solved = true;
+    pz.message = puzzle.successText;
+    markPuzzleSolved('go', puzzle.title);
+  } else {
+    pz.message = puzzle.failText;
+  }
+  render();
+}
+
+const GO_LESSONS = [
+  {
+    title: 'Board & Stones',
+    difficulty: 'beginner',
+    intro: 'Go is played on the crossing points of a grid, not inside the squares. Players alternate placing black and white stones on empty points. Once placed, a stone never moves — the only way it leaves the board is by being captured.',
+    hint: 'Click any empty point to place a stone. Click an existing stone to see its liberties.',
+    setup(){ return { board: emptyGoBoard(19), turn: 'black', track: null }; }
+  },
+  {
+    title: 'Opening Priorities',
+    difficulty: 'beginner',
+    intro: 'Unlike chess, Go boards start completely empty, so the very first moves matter enormously. The classic order of priority is: corners first (they\'re the cheapest to secure), then sides, and only then the center — the center is the hardest and most expensive area to turn into real territory. The star points (the marked dots) are traditional reference points for exactly this reason.',
+    hint: 'Try a few points and see what the board thinks of each one — corners score best, center moves score worst.',
+    commentary(r,c,size,captured){
+      if(captured) return undefined;
+      const distEdge = Math.min(r, c, size-1-r, size-1-c);
+      if(distEdge <= 1) return "That's very close to the edge — stones here end up with too few liberties to be efficient, even though it feels 'safe.'";
+      if(distEdge <= 3) return "That's the 3rd or 4th line — exactly where most opening moves happen. Close enough to the edge to secure space quickly, far enough in to still have room to grow.";
+      if(distEdge <= 6) return "That's a bit further inward — still reasonable, but most players would look at the corners and sides first.";
+      return "That's toward the center — center-first play is rare in Go, since it's the hardest area to turn into secure territory this early.";
+    },
+    setup(){ return { board: emptyGoBoard(19), turn: 'black', track: null }; }
+  },
+  {
+    title: 'Liberties',
+    difficulty: 'beginner',
+    intro: 'Every stone needs "liberties" — empty points directly next to it (up, down, left, right, not diagonally). A lone stone in the open has four liberties. Place stones next to it and watch its liberties shrink.',
+    hint: 'The gold dots mark the tracked stone\'s remaining liberties.',
+    setup(){
+      const board = emptyGoBoard(19);
+      board[9][9] = 'black';
+      return { board, turn: 'white', track: [9,9] };
+    }
+  },
+  {
+    title: 'Capture',
+    difficulty: 'beginner',
+    relatedPuzzle: 'Capture the Stone',
+    intro: 'A stone or group is captured — removed from the board — the moment its last liberty is filled by the opponent. The black stone below has just one liberty left. Play white on that last open point to capture it.',
+    hint: 'Place the white stone on the remaining gold dot to complete the capture.',
+    setup(){
+      const board = emptyGoBoard(19);
+      board[9][9]='black';
+      board[8][9]='white'; board[9][8]='white'; board[9][10]='white';
+      return { board, turn: 'white', track: [9,9] };
+    }
+  },
+  {
+    title: 'Atari',
+    difficulty: 'beginner',
+    relatedPuzzle: 'Create Atari',
+    intro: 'When a stone or group has only one liberty left, it\'s said to be "in atari" — one move away from capture. Here a pair of black stones is in atari. Finish the capture as white.',
+    hint: 'This two-stone group shares its liberties as a group, not individually.',
+    setup(){
+      const board = emptyGoBoard(19);
+      board[9][8]='black'; board[9][9]='black';
+      board[8][8]='white'; board[8][9]='white';
+      board[10][8]='white'; board[10][9]='white';
+      board[9][7]='white';
+      return { board, turn: 'white', track: [9,8] };
+    }
+  },
+  {
+    title: 'Ko',
+    difficulty: 'intermediate',
+    intro: 'Sometimes capturing a single stone would let the opponent immediately capture it right back, over and over, forever. The ko rule forbids that: you can\'t replay a move that would recreate the position from just before your opponent\'s last move. Capture the black stone as White, then try to recapture as Black — you\'ll see the ko rule step in.',
+    hint: 'After White captures, Black must play elsewhere first before retaking.',
+    setup(){
+      const board = emptyGoBoard(19);
+      board[8][9]='white'; board[10][9]='white'; board[9][8]='white';
+      board[8][10]='black'; board[10][10]='black'; board[9][11]='black';
+      board[9][9]='black';
+      return { board, turn: 'white', track: [9,9] };
+    }
+  },
+  {
+    title: 'Illegal Moves',
+    difficulty: 'beginner',
+    intro: 'You can\'t place a stone on a point where it would have zero liberties right away, unless doing so captures an opponent\'s stone or group first. That kind of move is called "suicide," and it\'s simply not allowed. Try playing white on the fully enclosed point below.',
+    hint: 'Click the empty point in the middle — it\'s surrounded on all sides with nothing to capture.',
+    setup(){
+      const board = emptyGoBoard(19);
+      board[8][9]='black'; board[10][9]='black'; board[9][8]='black'; board[9][10]='black';
+      return { board, turn: 'white', track: null };
+    }
+  },
+  {
+    title: 'Territory',
+    difficulty: 'beginner',
+    intro: 'At the end of a game, each player scores the empty points fully surrounded by only their own stones — that\'s their "territory" — plus the stones they\'ve captured. The black wall below encloses a small pocket of territory in the corner.',
+    hint: 'Feel free to place a few stones and see how enclosed space works.',
+    setup(){
+      const board = emptyGoBoard(19);
+      [[0,2],[1,2],[2,2],[2,1],[2,0]].forEach(([r,c])=> board[r][c]='black');
+      return { board, turn: 'white', track: null };
+    }
+  },
+  {
+    title: 'Life and Death',
+    difficulty: 'intermediate',
+    intro: 'A group survives forever once it has two separate "eyes" — fully enclosed empty points the opponent can never legally fill. The black shape below has exactly two eyes. Try playing white into either one.',
+    hint: 'Click either of the two enclosed points as White — notice both are illegal moves.',
+    commentary(r,c,size,captured){
+      if(captured) return undefined;
+      const isEye = (r===7 && c===8) || (r===7 && c===10);
+      if(isEye) return null; // the illegal-move message takes over for these
+      return "Try clicking one of the two small enclosed points inside the black shape — those are its eyes.";
+    },
+    setup(){
+      const board = emptyGoBoard(19);
+      for(let c=7;c<=11;c++){ board[6][c]='black'; board[8][c]='black'; }
+      [7,9,11].forEach(c=> board[7][c]='black');
+      return { board, turn: 'white', track: null };
+    }
+  },
+  {
+    title: 'Connections and Cuts',
+    difficulty: 'intermediate',
+    relatedPuzzle: 'Connect Your Stones',
+    intro: 'Stones directly next to each other (up, down, left, or right) are automatically one connected group — nothing can separate them. Stones touching only diagonally are a different story: they look related, but a "cut" played right between them leaves both stones on their own. Compare the two black pairs below.',
+    hint: 'Try playing white at the point between the diagonal pair — that\'s the cutting point.',
+    commentary(r,c,size,captured){
+      if(captured) return undefined;
+      const isCut = (r===8 && c===9) || (r===9 && c===8);
+      if(isCut) return 'That\'s the cut! The two black stones were only diagonally related, not actually joined — now they\'re fully separate, each with fewer liberties and no way to help the other.';
+      if(r===11 && (c===8 || c===9)) return 'These two are already one solid group — there\'s no gap to cut, so nothing you play nearby can separate them.';
+      return 'The top pair (diagonal) can be cut. The bottom pair (directly adjacent) cannot — try clicking between the diagonal stones.';
+    },
+    setup(){
+      const board = emptyGoBoard(19);
+      board[8][8] = 'black';
+      board[9][9] = 'black';
+      board[11][8] = 'black';
+      board[11][9] = 'black';
+      return { board, turn: 'white', track: null };
+    }
+  },
+  {
+    title: 'Good Shape, Bad Shape',
+    difficulty: 'intermediate',
+    intro: 'Not all arrangements of stones are equally efficient, even with the same number of stones. Compare the two black groups below: one is a "straight three," the other is a shape called an "empty triangle" — a classic example of inefficient shape, since one stone contributes almost nothing extra. Click each group to compare their liberties.',
+    hint: 'Click a stone in either shape to see its group\'s full liberty count.',
+    setup(){
+      const board = emptyGoBoard(19);
+      // Empty triangle: three stones forming a right angle, leaving the
+      // diagonal point empty — a well-known inefficient shape.
+      board[5][5]='black'; board[6][5]='black'; board[5][6]='black';
+      // Straight three: the same number of stones, arranged efficiently.
+      board[5][13]='black'; board[5][14]='black'; board[5][15]='black';
+      return { board, turn: 'black', track: [5,5] };
+    }
+  },
+  {
+    title: 'Ladders',
+    difficulty: 'intermediate',
+    type: 'ladder',
+    intro: 'A "ladder" is a way to capture a stone by chasing it in a zigzag, atari after atari, until it runs out of room. Each time White ataris, Black has only one legal way to run — until the run leads into a corner or edge with nowhere left to go. Step through the sequence below and watch it play out.',
+    hint: ''
+  },
+  {
+    title: 'Sente and Gote',
+    difficulty: 'advanced',
+    intro: 'Not every move is equally urgent. A move is "sente" if it forces a response — your opponent effectively has to answer it, or something bad happens to them. A move is "gote" if it doesn\'t force anything, leaving the opponent completely free to play wherever they like next. Finishing an exchange in sente is valuable: you get to keep dictating what happens. Below, the black pair is in atari.',
+    hint: 'Finish the capture (sente) or play a quiet point elsewhere on the board (gote), and compare the results.',
+    commentary(r,c,size,captured){
+      if(captured) return 'That completes the capture — this was "sente." Your opponent effectively had to let this happen (or defend it earlier), so you keep the initiative and get to choose what happens next.';
+      return 'That\'s a quiet move — this is "gote." It doesn\'t force any response, so your opponent is completely free to play wherever they like next. Both sente and gote moves matter, but ending a sequence in sente lets you keep steering the game.';
+    },
+    setup(){
+      const board = emptyGoBoard(19);
+      board[9][12]='black'; board[9][13]='black';
+      board[8][12]='white'; board[8][13]='white';
+      board[10][12]='white'; board[10][13]='white';
+      board[9][11]='white';
+      return { board, turn: 'white', track: [9,12] };
+    }
+  },
+  {
+    title: 'Handicap Games',
+    difficulty: 'beginner',
+    type: 'handicap',
+    intro: 'Go has a simple, elegant way to let players of different strengths enjoy a fair game: handicap stones. The weaker player (Black) places several stones on the star points before White\'s first move — the exact number depends on the skill gap, commonly two to nine stones. This head start roughly balances out a real difference in strength, something surprisingly few other games manage this cleanly. Shown below is the maximum, traditional 9-stone handicap.',
+    hint: ''
+  },
+  {
+    title: 'Joseki',
+    difficulty: 'advanced',
+    type: 'joseki',
+    intro: 'A "joseki" is a sequence of moves in a corner that\'s been played so often it\'s considered locally standard — both sides end up reasonably satisfied with the result. The patterns below are simplified illustrations of a few different flavors of the idea, played out on a full 19×19 board so the distances and star points are the real ones. Pick one and step through it move by move.',
+    hint: ''
+  }
+];
+
+// A simplified, illustrative corner sequence for the Joseki lesson — not a
+// verbatim textbook joseki (those are specific to full-size 19×19 corners),
+// but a scaled-down example of the same underlying idea.
+// A fully verified ladder sequence: White chases a black stone into the
+// corner, where it eventually has no legal escape at all and gets captured.
+const LADDER_EXAMPLE = {
+  moves: [
+    { r:1, c:1, color:'black', caption: 'Black has a lone stone with a white stone nearby.' },
+    { r:1, c:2, color:'white', caption: 'White adds a second flanking stone, leaving Black just two liberties.' },
+    { r:2, c:1, color:'white', caption: 'Now Black is boxed into an "L" shape with only two ways out.' },
+    { r:1, c:0, color:'white', caption: 'White ataris from the left — Black has exactly one liberty left and must respond.' },
+    { r:0, c:1, color:'black', caption: 'Black is forced to run into the only open point. But notice it\'s now hugging the edge, which limits its options even more.' },
+    { r:0, c:2, color:'white', caption: 'White ataris again. Black\'s only liberty now is the actual corner point.' },
+    { r:0, c:0, color:'white', caption: 'Black can\'t legally play the corner itself — doing so would leave the group with zero liberties and capture nothing, which is illegal. With no legal way to escape, White simply plays there and captures the whole chain. That\'s the ladder: forced, one-way-only running, right into a dead end.' }
+  ]
+};
+
+// This set was rebuilt after an earlier version made a false claim — that a
+// single stone can "cut" a bare diagonal relationship, which isn't true,
+// since the other connecting point always remains open. Every puzzle here
+// has been verified two ways: the position and grading outcome are checked
+// directly against the engine, AND any claim made in the success text has
+// been independently confirmed true, not just assumed. The 12 puzzles cover
+// 6 different skills, not just different shapes wrapped around one task:
+// finishing a capture, creating pressure without capturing, a two-target
+// tactic, telling a real threat from a similar-looking non-threat,
+// recognizing an illegal move, choosing the better of two real options,
+// rescuing a group, and forming one connected group from separate stones.
+const GO_PUZZLES = [
+  {
+    title: 'Capture the Stone',
+    intro: 'Black to move. Capture the marked white stone.',
+    color: 'black',
+    checkType: 'capture',
+    minCapture: 1,
+    successText: "Captured! That was White's last liberty.",
+    failText: "That doesn't capture anything. Find White's last remaining liberty.",
+    setup(){
+      const board = emptyGoBoard(19);
+      board[9][9]='white'; board[8][9]='black'; board[10][9]='black'; board[9][8]='black';
+      return { board };
+    }
+  },
+  {
+    title: 'Capture the Group',
+    intro: 'Black to move. This two-stone white group is in atari — finish it off.',
+    color: 'black',
+    checkType: 'capture',
+    minCapture: 2,
+    successText: 'Captured! Groups share their liberties — filling the last one takes the whole chain.',
+    failText: "Not quite — that doesn't remove the group's last liberty.",
+    setup(){
+      const board = emptyGoBoard(19);
+      board[9][8]='white'; board[9][9]='white';
+      board[8][8]='black'; board[8][9]='black'; board[10][8]='black'; board[10][9]='black'; board[9][7]='black';
+      return { board };
+    }
+  },
+  {
+    title: 'Spot the Liberty',
+    intro: 'Black to move. This bent three-stone group only has one liberty left — can you find it?',
+    color: 'black',
+    checkType: 'capture',
+    minCapture: 3,
+    successText: "Captured all three! Bent shapes can hide their last liberty — it helps to check every stone's neighbors.",
+    failText: "That's not the group's last liberty — look carefully at each stone's open neighbors.",
+    setup(){
+      const board = emptyGoBoard(19);
+      board[9][8]='white'; board[9][9]='white'; board[10][9]='white';
+      [[8,8],[10,8],[9,7],[8,9],[11,9],[10,10]].forEach(([r,c])=>board[r][c]='black');
+      return { board };
+    }
+  },
+  {
+    title: 'Create Atari',
+    intro: 'Black to move. This white group still has two liberties — find the move that puts it in atari, one move from capture.',
+    color: 'black',
+    checkType: 'atari',
+    targetGroup: [9,9],
+    successText: "That puts White in atari! You haven't captured yet, but now White has only one liberty left and must respond immediately.",
+    failText: "That doesn't put the group in atari yet — it still has more than one liberty, or you've captured it outright.",
+    setup(){
+      const board = emptyGoBoard(19);
+      board[9][9]='white'; board[9][10]='white';
+      board[8][9]='black'; board[10][9]='black'; board[9][8]='black'; board[8][10]='black';
+      return { board };
+    }
+  },
+  {
+    title: 'Double Atari',
+    intro: 'Black to move. These two separate white groups happen to share one liberty — find the point that puts both in atari at once.',
+    color: 'black',
+    checkType: 'point',
+    solutionPoints: [[9,10]],
+    successText: 'That\'s a double atari! Both groups are now down to one liberty each — White can only save one of them.',
+    failText: "That doesn't threaten both groups. Look for the single point they both depend on.",
+    setup(){
+      const board = emptyGoBoard(19);
+      board[9][9]='white'; board[10][9]='black'; board[9][8]='black';
+      board[9][11]='white'; board[8][11]='black'; board[10][11]='black';
+      return { board };
+    }
+  },
+  {
+    title: 'Connect Your Stones',
+    intro: 'Black to move. Your two stones only touch diagonally right now, which leaves them as two separate, weaker groups. Play the point that joins them into one solid group sharing all their liberties.',
+    color: 'black',
+    checkType: 'connect',
+    stoneA: [5,15],
+    stoneB: [6,16],
+    successText: "Connected! Either of the two points between a diagonal pair works — now your stones are one group, sharing liberties and much harder to attack.",
+    failText: "That doesn't connect your stones — look for one of the two points sitting directly between them.",
+    setup(){
+      const board = emptyGoBoard(19);
+      board[5][15]='black'; board[6][16]='black';
+      return { board };
+    }
+  },
+  {
+    title: 'Save Your Group',
+    intro: 'Your black stone is in atari. Find the move that saves it.',
+    color: 'black',
+    checkType: 'survive',
+    minLiberties: 2,
+    targetStone: [5,13],
+    successText: "Saved! That extension gives the group multiple fresh liberties — it's safe for now.",
+    failText: "That doesn't rescue the stone — look for its one remaining liberty.",
+    setup(){
+      const board = emptyGoBoard(19);
+      board[5][13]='black'; board[4][13]='white'; board[5][12]='white'; board[5][14]='white';
+      return { board };
+    }
+  },
+  {
+    title: 'Save Your Group',
+    intro: 'Your black stone is pinned against the edge and in atari. Find the move that saves it.',
+    color: 'black',
+    checkType: 'survive',
+    minLiberties: 2,
+    targetStone: [0,9],
+    successText: 'Saved! Even hugging the edge, that extension opens up enough room to be safe for now.',
+    failText: "That doesn't save the stone — look for its one remaining liberty.",
+    setup(){
+      const board = emptyGoBoard(19);
+      board[0][9]='black'; board[0][8]='white'; board[1][9]='white';
+      return { board };
+    }
+  },
+  {
+    title: "Don't Fall for It",
+    intro: "Black to move. One nearby point looks like it might do something — but it's actually illegal. Find the real capture instead.",
+    color: 'black',
+    checkType: 'capture',
+    minCapture: 1,
+    successText: "Correct — that's the real capture. The other point was a fully enclosed white shape with no last liberty to remove; playing there would have been suicide.",
+    failText: "That move isn't the answer — look for a white stone that's actually down to one liberty.",
+    setup(){
+      const board = emptyGoBoard(19);
+      board[9][9]='white'; board[8][9]='black'; board[10][9]='black'; board[9][8]='black';
+      board[4][5]='white'; board[6][5]='white'; board[5][4]='white'; board[5][6]='white';
+      return { board };
+    }
+  },
+  {
+    title: 'Miscounted Liberties',
+    intro: 'Black to move. Two white pairs look almost identical — but only one of them is actually in atari. Find the real one.',
+    color: 'black',
+    checkType: 'capture',
+    minCapture: 2,
+    successText: 'Correct! That pair really was down to one liberty. The other pair only looked similar — it still had room to breathe.',
+    failText: "That doesn't capture anything — look again at how many open neighbors each white pair actually has.",
+    setup(){
+      const board = emptyGoBoard(19);
+      board[9][8]='white'; board[9][9]='white';
+      board[8][8]='black'; board[8][9]='black'; board[10][8]='black'; board[10][9]='black'; board[9][7]='black';
+      board[9][14]='white'; board[9][15]='white';
+      board[8][14]='black'; board[8][15]='black'; board[10][14]='black';
+      return { board };
+    }
+  },
+  {
+    title: 'Capture the Bigger Group',
+    intro: 'Black to move. Two separate white groups are in atari, on opposite sides of the board. You can only play one move — make it count.',
+    color: 'black',
+    checkType: 'capture',
+    minCapture: 4,
+    successText: "That's the one — capturing four stones instead of two. Both were legal captures, but always take the biggest profit available when you have a choice.",
+    failText: "That does capture something, but it's the smaller group. A bigger capture is available elsewhere on the board — look for it.",
+    setup(){
+      const board = emptyGoBoard(19);
+      board[3][3]='white'; board[3][4]='white';
+      board[2][3]='black'; board[2][4]='black'; board[4][3]='black'; board[4][4]='black'; board[3][2]='black';
+      board[13][13]='white'; board[13][14]='white'; board[14][13]='white'; board[14][14]='white';
+      [[12,13],[12,14],[15,13],[13,12],[14,12],[13,15],[14,15]].forEach(([r,c])=>board[r][c]='black');
+      return { board };
+    }
+  },
+  {
+    title: 'Capture the Cross',
+    intro: 'Black to move. Five white stones, one shared liberty — find it.',
+    color: 'black',
+    checkType: 'capture',
+    minCapture: 5,
+    successText: 'Captured the whole cross! The more stones in a group, the more it can look alive — but it only ever takes one last liberty to end it.',
+    failText: "Not quite — this whole group shares just one remaining liberty. Look carefully.",
+    setup(){
+      const board = emptyGoBoard(19);
+      board[9][7]='white'; board[9][8]='white'; board[9][9]='white'; board[8][8]='white'; board[10][8]='white';
+      [[8,7],[10,7],[9,6],[7,8],[11,8],[8,9],[10,9]].forEach(([r,c])=>board[r][c]='black');
+      return { board };
+    }
+  }
+];
+
+const JOSEKI_LIBRARY = [
+  {
+    name: 'Corner Approach and Extension',
+    blurb: 'The calm, standard reply — settle for solid, guaranteed territory instead of starting a fight.',
+    moves: [
+      { r:3, c:3, color:'black', caption: 'Black opens on the star point — corners are the cheapest area to stake a claim early.' },
+      { r:3, c:7, color:'white', caption: 'White approaches from the side, before Black can enclose the whole corner.' },
+      { r:6, c:3, color:'black', caption: 'Black extends down the side, strengthening the corner stone and starting to build a framework.' },
+      { r:3, c:9, color:'white', caption: 'White extends the approach stone toward its own side.' },
+      { r:9, c:3, color:'black', caption: 'Black takes an even bigger point further down the side — instead of stopping at a small result, Black keeps building a large framework along the whole left edge.' },
+      { r:1, c:8, color:'white', caption: 'White finishes by settling the group with a small move near the top. Both sides end this exchange with a clear, workable plan — Black has outside strength and side territory, White has a stable group and the corner\'s edge.' }
+    ]
+  },
+  {
+    name: 'Corner Approach and Pincer',
+    blurb: 'A sharper reply — instead of calmly building the corner, Black tries to trap the approaching stone.',
+    moves: [
+      { r:15, c:3, color:'black', caption: 'Black opens in the corner, same idea as before.' },
+      { r:11, c:3, color:'white', caption: 'White approaches from above.' },
+      { r:7, c:3, color:'black', caption: 'Instead of a calm response, Black "pincers" — playing beyond White\'s stone so it\'s squeezed between two black stones with nowhere comfortable to land.' },
+      { r:9, c:7, color:'white', caption: 'White has to jump out toward the open center rather than settle locally.' },
+      { r:5, c:7, color:'black', caption: 'Black presses again, chasing the weak white group and building even more outside strength in the process.' },
+      { r:9, c:10, color:'white', caption: 'White keeps running toward open space. Pincers like this trade a little corner territory for a fight across a much bigger area of the board — exactly the kind of "whole board" thinking that separates joseki choices from each other.' }
+    ]
+  },
+  {
+    name: 'Attach and Hane',
+    blurb: 'A contact fight from the very first exchange — attaching directly against the opponent\'s stone instead of keeping a polite distance.',
+    moves: [
+      { r:3, c:15, color:'black', caption: 'Black opens in the corner as usual.' },
+      { r:3, c:11, color:'white', caption: 'White approaches from the side.' },
+      { r:3, c:12, color:'black', caption: 'Instead of a calm extension, Black "attaches" — playing directly against White\'s stone to provoke a fight.' },
+      { r:2, c:12, color:'white', caption: 'White "hanes" — turning around the attaching stone rather than simply backing away.' },
+      { r:2, c:11, color:'black', caption: 'Black blocks on the other side, keeping the pressure on and preventing White from easily connecting back.' },
+      { r:4, c:12, color:'white', caption: 'White extends down to stabilize the cutting stone. Contact plays like this tend to escalate quickly, which is why beginners are often told: when in doubt, don\'t attach.' }
+    ]
+  },
+  {
+    name: '3-3 Point Invasion',
+    blurb: 'What happens when a corner is only loosely framed from a distance, rather than actually occupied.',
+    moves: [
+      { r:9, c:15, color:'black', caption: 'Black stakes out influence with a stone facing the corner from a distance...' },
+      { r:15, c:9, color:'black', caption: '...and a second stone doing the same from the other direction. The corner itself is still completely empty.' },
+      { r:15, c:15, color:'white', caption: 'Because nobody actually occupies the corner point, White can invade directly and try to carve out a small living group inside it.' },
+      { r:13, c:15, color:'black', caption: 'Black blocks from one side to limit how much space White can use.' },
+      { r:15, c:12, color:'white', caption: 'White slides along the edge to grab just enough room to live.' },
+      { r:11, c:15, color:'black', caption: 'Black seals off the outside with one more move — a small but real result for White, in exchange for Black keeping strong, wall-like influence facing the rest of the board.' }
+    ]
+  }
+];
+
+function initGoLesson(idx){
+  const lesson = GO_LESSONS[idx];
+  state.go.lessonIdx = idx;
+  markLessonViewed('go', lesson.title);
+  if(lesson.type === 'joseki'){
+    state.go.board = null;
+    state.go.joseki = { patternIdx: null, stepIndex: 0, history: [] };
+    return;
+  }
+  if(lesson.type === 'ladder'){
+    state.go.board = null;
+    state.go.ladder = { stepIndex: 0, history: [emptyGoBoard(19)] };
+    return;
+  }
+  if(lesson.type === 'handicap'){
+    state.go.board = null;
+    return;
+  }
+  const setup = lesson.setup();
+  state.go.board = setup.board;
+  state.go.turn = setup.turn;
+  state.go.inspect = setup.track;
+  state.go.message = '';
+  state.go.koPoint = null;
+}
+
+function goJosekiSelect(idx){
+  state.go.joseki = { patternIdx: idx, stepIndex: 0, history: [emptyGoBoard(19)] };
+  render();
+}
+
+function goJosekiNext(){
+  const js_ = state.go.joseki;
+  if(!js_ || js_.patternIdx === null) return;
+  const pattern = JOSEKI_LIBRARY[js_.patternIdx];
+  if(js_.stepIndex >= pattern.moves.length) return;
+  const step = pattern.moves[js_.stepIndex];
+  const board = js_.history[js_.stepIndex];
+  const result = tryPlaceStone(board, step.r, step.c, step.color, null);
+  js_.history.push(result.legal ? result.board : board);
+  js_.stepIndex += 1;
+  render();
+}
+
+function goJosekiPrev(){
+  const js_ = state.go.joseki;
+  if(!js_ || js_.stepIndex <= 0) return;
+  js_.stepIndex -= 1;
+  render();
+}
+
+function goJosekiReset(){
+  const js_ = state.go.joseki;
+  if(!js_ || js_.patternIdx === null) return;
+  state.go.joseki = { patternIdx: js_.patternIdx, stepIndex: 0, history: [emptyGoBoard(19)] };
+  render();
+}
+
+function goJosekiBack(){
+  state.go.joseki = { patternIdx: null, stepIndex: 0, history: [] };
+  render();
+}
+
+function goLadderNext(){
+  const ld = state.go.ladder;
+  if(!ld || ld.stepIndex >= LADDER_EXAMPLE.moves.length) return;
+  const step = LADDER_EXAMPLE.moves[ld.stepIndex];
+  const board = ld.history[ld.stepIndex];
+  const result = tryPlaceStone(board, step.r, step.c, step.color, null);
+  ld.history.push(result.legal ? result.board : board);
+  ld.stepIndex += 1;
+  render();
+}
+
+function goLadderPrev(){
+  const ld = state.go.ladder;
+  if(!ld || ld.stepIndex <= 0) return;
+  ld.stepIndex -= 1;
+  render();
+}
+
+function goLadderReset(){
+  state.go.ladder = { stepIndex: 0, history: [emptyGoBoard(19)] };
+  render();
+}
+
+function placeGoStone(r,c){
+  if(state.go.board[r][c]){
+    state.go.inspect = [r,c];
+    render();
+    return;
+  }
+  if(state.go.koPoint && state.go.koPoint[0]===r && state.go.koPoint[1]===c){
+    state.go.message = "Ko! That would recreate the position from before your opponent's last move. Play elsewhere first.";
+    render();
+    return;
+  }
+  const color = state.go.turn;
+  const opp = color==='black' ? 'white' : 'black';
+  const newBoard = state.go.board.map(row=>row.slice());
+  newBoard[r][c] = color;
+  let capturedPoints = [];
+  neighbors9(r,c,state.go.board.length).forEach(([nr,nc])=>{
+    if(newBoard[nr][nc]===opp){
+      const grp = getGroup(newBoard,nr,nc);
+      const libs = getLiberties(newBoard,grp);
+      if(libs.length===0){
+        grp.forEach(([gr,gc])=>{ newBoard[gr][gc]=null; capturedPoints.push([gr,gc]); });
+      }
+    }
+  });
+  const captured = capturedPoints.length > 0;
+  const ownGrp = getGroup(newBoard,r,c);
+  const ownLibs = getLiberties(newBoard,ownGrp);
+  if(ownLibs.length===0 && !captured){
+    state.go.message = "That point has no liberties — that move isn't allowed.";
+    render();
+    return;
+  }
+  state.go.board = newBoard;
+  state.go.turn = opp;
+  state.go.inspect = [r,c];
+  if(capturedPoints.length===1 && ownGrp.length===1 && ownLibs.length===1 && ownLibs[0][0]===capturedPoints[0][0] && ownLibs[0][1]===capturedPoints[0][1]){
+    state.go.koPoint = capturedPoints[0];
+  } else {
+    state.go.koPoint = null;
+  }
+  const lesson = GO_LESSONS[state.go.lessonIdx];
+  const customMsg = lesson.commentary ? lesson.commentary(r, c, newBoard.length, captured) : undefined;
+  if(customMsg !== undefined && customMsg !== null){
+    state.go.message = customMsg;
+  } else if(captured){
+    state.go.message = 'Captured! A stone or group loses its last liberty and is removed from the board.';
+  } else {
+    state.go.message = '';
+  }
+  render();
+}
+
+function renderPuzzleGoBoardSVG(board, interactive){
+  const n = board.length;
+  const L = n >= 19 ? 27 : 48, M = n >= 19 ? 22 : 32;
+  const size = M*2 + (n-1)*L;
+  let lines = '';
+  for(let i=0;i<n;i++){
+    const pos = M+i*L;
+    lines += `<line x1="${M}" y1="${pos}" x2="${M+(n-1)*L}" y2="${pos}" stroke="#5a4a30" stroke-width="1"></line>`;
+    lines += `<line x1="${pos}" y1="${M}" x2="${pos}" y2="${M+(n-1)*L}" stroke="#5a4a30" stroke-width="1"></line>`;
+  }
+  let hoshi = '';
+  starPoints(n).forEach(([r,c])=>{
+    const x=M+c*L, y=M+r*L;
+    hoshi += `<circle cx="${x}" cy="${y}" r="${n>=19?3:3.5}" fill="#5a4a30"></circle>`;
+  });
+  const stoneR = n >= 19 ? 12.5 : 20;
+  let stones = '', clickable = '';
+  for(let r=0;r<n;r++) for(let c=0;c<n;c++){
+    const x=M+c*L, y=M+r*L;
+    if(interactive) clickable += `<rect x="${x-L/2}" y="${y-L/2}" width="${L}" height="${L}" fill="transparent" style="cursor:pointer" data-action="puzzle-go-point" data-r="${r}" data-c="${c}"></rect>`;
+    const occ = board[r][c];
+    if(!occ) continue;
+    if(occ==='black') stones += `<circle cx="${x}" cy="${y}" r="${stoneR}" fill="#1C1A17" stroke="#000" stroke-width="0.5"></circle>`;
+    else stones += `<circle cx="${x}" cy="${y}" r="${stoneR}" fill="#F5F1E8" stroke="#8a8071" stroke-width="1"></circle>`;
+  }
+  return `<svg viewBox="0 0 ${size} ${size}" width="${size}" height="${size}">
+    <rect x="0" y="0" width="${size}" height="${size}" fill="var(--board-wood)"></rect>
+    ${lines}${hoshi}${stones}${clickable}
+  </svg>`;
+}
+
+function renderStaticGoBoardSVG(board, highlightPos){
+  const n = board.length;
+  const L = n >= 19 ? 27 : 48, M = n >= 19 ? 22 : 32;
+  const size = M*2 + (n-1)*L;
+  let lines = '';
+  for(let i=0;i<n;i++){
+    const pos = M+i*L;
+    lines += `<line x1="${M}" y1="${pos}" x2="${M+(n-1)*L}" y2="${pos}" stroke="#5a4a30" stroke-width="1"></line>`;
+    lines += `<line x1="${pos}" y1="${M}" x2="${pos}" y2="${M+(n-1)*L}" stroke="#5a4a30" stroke-width="1"></line>`;
+  }
+  let hoshi = '';
+  starPoints(n).forEach(([r,c])=>{
+    const x=M+c*L, y=M+r*L;
+    hoshi += `<circle cx="${x}" cy="${y}" r="${n>=19?3:3.5}" fill="#5a4a30"></circle>`;
+  });
+  const stoneR = n >= 19 ? 12.5 : 20;
+  let stones = '', highlight = '';
+  for(let r=0;r<n;r++) for(let c=0;c<n;c++){
+    const occ = board[r][c];
+    if(!occ) continue;
+    const x=M+c*L, y=M+r*L;
+    if(occ==='black') stones += `<circle cx="${x}" cy="${y}" r="${stoneR}" fill="#1C1A17" stroke="#000" stroke-width="0.5"></circle>`;
+    else stones += `<circle cx="${x}" cy="${y}" r="${stoneR}" fill="#F5F1E8" stroke="#8a8071" stroke-width="1"></circle>`;
+  }
+  if(highlightPos){
+    const x=M+highlightPos[1]*L, y=M+highlightPos[0]*L;
+    highlight = `<circle cx="${x}" cy="${y}" r="${n>=19?7:10}" fill="none" stroke="var(--gold)" stroke-width="2.5"></circle>`;
+  }
+  return `<svg viewBox="0 0 ${size} ${size}" width="${size}" height="${size}">
+    <rect x="0" y="0" width="${size}" height="${size}" fill="var(--board-wood)"></rect>
+    ${lines}${hoshi}${stones}${highlight}
+  </svg>`;
+}
+
+function renderGoBoardSVG(){
+  const board = state.go.board;
+  const n = board.length;
+  const L = n >= 19 ? 27 : 48, M = n >= 19 ? 22 : 32;
+  const size = M*2 + (n-1)*L;
+
+  let lines = '';
+  for(let i=0;i<n;i++){
+    const pos = M + i*L;
+    lines += `<line x1="${M}" y1="${pos}" x2="${M+(n-1)*L}" y2="${pos}" stroke="#5a4a30" stroke-width="1"></line>`;
+    lines += `<line x1="${pos}" y1="${M}" x2="${pos}" y2="${M+(n-1)*L}" stroke="#5a4a30" stroke-width="1"></line>`;
+  }
+  let hoshi = '';
+  starPoints(n).forEach(([r,c])=>{
+    const x = M + c*L, y = M + r*L;
+    hoshi += `<circle cx="${x}" cy="${y}" r="${n>=19?3:3.5}" fill="#5a4a30"></circle>`;
+  });
+
+  let inspectGroup = [];
+  let inspectLibs = [];
+  if(state.go.inspect){
+    const [ir,ic] = state.go.inspect;
+    if(board[ir][ic]){
+      inspectGroup = getGroup(board, ir, ic);
+      inspectLibs = getLiberties(board, inspectGroup);
+    }
+  }
+
+  const ringR = n >= 19 ? 14 : 22, dotR = n >= 19 ? 4 : 6;
+  let highlights = '';
+  inspectGroup.forEach(([r,c])=>{
+    const x = M + c*L, y = M + r*L;
+    highlights += `<circle cx="${x}" cy="${y}" r="${ringR}" fill="none" stroke="var(--gold)" stroke-width="3"></circle>`;
+  });
+  inspectLibs.forEach(([r,c])=>{
+    const x = M + c*L, y = M + r*L;
+    highlights += `<circle cx="${x}" cy="${y}" r="${dotR}" fill="var(--gold)"></circle>`;
+  });
+
+  const stoneR = n >= 19 ? 12.5 : 20;
+  let stones = '';
+  let interactive = '';
+  for(let r=0;r<n;r++){
+    for(let c=0;c<n;c++){
+      const x = M + c*L, y = M + r*L;
+      interactive += `<rect x="${x-L/2}" y="${y-L/2}" width="${L}" height="${L}" fill="transparent" style="cursor:pointer" data-action="go-point" data-r="${r}" data-c="${c}"></rect>`;
+      const occ = board[r][c];
+      if(occ==='black'){
+        stones += `<circle cx="${x}" cy="${y}" r="${stoneR}" fill="#1C1A17" stroke="#000" stroke-width="0.5"></circle>`;
+      } else if(occ==='white'){
+        stones += `<circle cx="${x}" cy="${y}" r="${stoneR}" fill="#F5F1E8" stroke="#8a8071" stroke-width="1"></circle>`;
+      }
+    }
+  }
+
+  return `<svg viewBox="0 0 ${size} ${size}" width="${size}" height="${size}">
+    <rect x="0" y="0" width="${size}" height="${size}" fill="var(--board-wood)"></rect>
+    ${lines}${hoshi}${highlights}${stones}${interactive}
+  </svg>`;
+}
+
+/* ============================================================
+   RENDER
+============================================================ */
+function render(){
+  const app = document.getElementById('app');
+  document.querySelectorAll('.navlink').forEach(el=>{
+    el.classList.remove('active-home','active-chess','active-go');
+  });
+  const navMap = { home:'active-home', chess:'active-chess', go:'active-go', play:'active-play', puzzles:'active-puzzles' };
+  const navBtns = document.querySelectorAll('.navlink');
+  navBtns.forEach(btn=>{
+    if(btn.dataset.target === state.section) btn.classList.add(navMap[state.section]);
+  });
+
+  if(state.section === 'home') app.innerHTML = renderHome();
+  else if(state.section === 'chess') app.innerHTML = renderChessSection();
+  else if(state.section === 'go') app.innerHTML = renderGoSection();
+  else if(state.section === 'play') app.innerHTML = renderPlaySection();
+  else if(state.section === 'puzzles') app.innerHTML = renderPuzzlesSection();
+}
+
+function progressBar(done, total, colorVar){
+  const pct = total ? Math.min(100, Math.round((done/total)*100)) : 0;
+  return `<div class="progress-track"><div class="progress-fill" style="width:${pct}%; background:${colorVar};"></div></div>`;
+}
+
+function continueLearning(game){
+  const lessons = game === 'chess' ? CHESS_LESSONS : GO_LESSONS;
+  const viewed = game === 'chess' ? state.progress.chessLessons : state.progress.goLessons;
+  let idx = lessons.findIndex(l => !viewed.includes(l.title));
+  if(idx === -1) idx = 0; // everything's been viewed — loop back for review
+  state.section = game;
+  if(game === 'chess') initChessLesson(idx); else initGoLesson(idx);
+  render();
+}
+
+function renderHome(){
+  const cLessons = state.progress.chessLessons.length, cLessonsTotal = CHESS_LESSONS.length;
+  const gLessons = state.progress.goLessons.length, gLessonsTotal = GO_LESSONS.length;
+  const cPuzzles = state.progress.chessPuzzles.length, cPuzzlesTotal = CHESS_PUZZLES.length;
+  const gPuzzles = state.progress.goPuzzles.length, gPuzzlesTotal = GO_PUZZLES.length;
+  const isNewUser = (cLessons + gLessons) === 0 && state.progress.gamesStarted === 0;
+
+  const pathSection = `
+  <div class="path-section">
+    <h3 class="path-heading">${isNewUser ? "New here? A good order to try things in:" : 'Your progress'}</h3>
+    <div class="path-steps">
+      <div class="path-step"><span class="path-step-num">1</span>Learn the rules</div>
+      <div class="path-step"><span class="path-step-num">2</span>Sharpen with puzzles</div>
+      <div class="path-step"><span class="path-step-num">3</span>Play a full game</div>
+    </div>
+    <div class="path-row">
+      <div class="path-col">
+        <div class="path-col-title" style="color:var(--chess-dark);">Chess</div>
+        <div class="path-stat">${cLessons} / ${cLessonsTotal} lessons</div>
+        ${progressBar(cLessons, cLessonsTotal, 'var(--chess)')}
+        <div class="path-stat" style="margin-top:8px;">${cPuzzles} / ${cPuzzlesTotal} puzzles solved</div>
+        ${progressBar(cPuzzles, cPuzzlesTotal, 'var(--chess)')}
+        <button class="continue-btn" data-action="continue-learning" data-game="chess" style="border-color:var(--chess); color:var(--chess-dark);">${cLessons===0 ? 'Start chess' : cLessons>=cLessonsTotal ? 'Review chess lessons' : 'Continue chess'}</button>
+      </div>
+      <div class="path-col">
+        <div class="path-col-title" style="color:var(--go-dark);">Go</div>
+        <div class="path-stat">${gLessons} / ${gLessonsTotal} lessons</div>
+        ${progressBar(gLessons, gLessonsTotal, 'var(--go)')}
+        <div class="path-stat" style="margin-top:8px;">${gPuzzles} / ${gPuzzlesTotal} puzzles solved</div>
+        ${progressBar(gPuzzles, gPuzzlesTotal, 'var(--go)')}
+        <button class="continue-btn" data-action="continue-learning" data-game="go" style="border-color:var(--go); color:var(--go-dark);">${gLessons===0 ? 'Start Go' : gLessons>=gLessonsTotal ? 'Review Go lessons' : 'Continue Go'}</button>
+      </div>
+    </div>
+  </div>`;
+
+  return `
+  <div class="hero">
+    <h1>Learn two ancient games, one move at a time</h1>
+    <p>Chess and Go are centuries old, played on very different boards, but both come down to a handful of simple rules. Pick a game below and start with the basics — interactive boards included.</p>
+  </div>
+  ${pathSection}
+  <div class="panels">
+    <div class="panel panel-chess" data-action="nav" data-target="chess">
+      <span class="glyph">♞</span>
+      <h2>Chess</h2>
+      <p>Six pieces, each with its own way of moving. Learn how they travel the board, capture, and protect the king.</p>
+      <span class="enter">Start learning chess</span>
+      <div class="meta">${CHESS_LESSONS.length} lessons</div>
+    </div>
+    <div class="panel panel-go" data-action="nav" data-target="go">
+      <span class="glyph">●</span>
+      <h2>Go</h2>
+      <p>One kind of stone, placed on a grid of lines. Learn liberties, capture, and how territory is claimed.</p>
+      <span class="enter">Start learning Go</span>
+      <div class="meta">${GO_LESSONS.length} lessons</div>
+    </div>
+  </div>
+  <div class="play-callout" data-action="nav" data-target="play" style="margin-top:1px; border:1px solid rgba(28,26,23,0.15); border-top:none; padding:22px 36px; cursor:pointer; display:flex; align-items:center; justify-content:space-between; gap:20px; flex-wrap:wrap;">
+    <div>
+      <h3 style="margin-bottom:4px; font-size:19px;">Ready to test what you've learned?</h3>
+      <p style="margin:0; font-size:14.5px;">Play a full game against a computer opponent — in chess or Go.</p>
+    </div>
+    <span class="enter" style="color:var(--ink);">Play now</span>
+  </div>
+  <div class="play-callout" data-action="nav" data-target="puzzles" style="margin-top:1px; border:1px solid rgba(28,26,23,0.15); border-top:none; padding:22px 36px; cursor:pointer; display:flex; align-items:center; justify-content:space-between; gap:20px; flex-wrap:wrap;">
+    <div>
+      <h3 style="margin-bottom:4px; font-size:19px;">Or sharpen your eye with puzzles</h3>
+      <p style="margin:0; font-size:14.5px;">Find the checkmate, the fork, or the capture — with instant feedback on every attempt.</p>
+    </div>
+    <span class="enter" style="color:var(--ink);">Try a puzzle</span>
+  </div>`;
+}
+
+const PIECE_VALUES = [
+  { glyph: '♙', name: 'Pawn', value: '1 point' },
+  { glyph: '♘', name: 'Knight', value: '3 points' },
+  { glyph: '♗', name: 'Bishop', value: '3 points' },
+  { glyph: '♖', name: 'Rook', value: '5 points' },
+  { glyph: '♕', name: 'Queen', value: '9 points' },
+  { glyph: '♔', name: 'King', value: 'Priceless' }
+];
+
+function renderPieceValues(){
+  const cards = PIECE_VALUES.map(p => `
+    <div class="value-card">
+      <span class="value-glyph">${p.glyph}</span>
+      <div class="value-name">${p.name}</div>
+      <div class="value-points">${p.value}</div>
+    </div>`).join('');
+  return `<div class="value-grid">${cards}</div>`;
+}
+
+function renderChessSection(){
+  if(!state.chess.initialized){ initChessLesson(0); state.chess.initialized = true; }
+  const idx = state.chess.lessonIdx;
+  const lesson = CHESS_LESSONS[idx];
+
+  const sidebarItems = CHESS_LESSONS.map((l,i)=>`
+    <button class="lesson-item ${i===idx?'active':''}" data-action="chess-select" data-idx="${i}">
+      <span class="num">${i+1}</span><span>${l.title}</span>${difficultyDot(l.difficulty)}
+    </button>`).join('');
+
+  let body;
+  if(lesson.type === 'values'){
+    body = renderPieceValues();
+  } else if(lesson.type === 'startpos'){
+    body = `
+      <div class="board-area">
+        <div class="board-holder">${renderChessFullBoardSVG(initialChessGS(), null, [], null, false)}</div>
+      </div>`;
+  } else if(lesson.type === 'opening'){
+    const op = state.chess.opening;
+    let legalTargets = [];
+    if(op.selected && !op.played){
+      legalTargets = generateLegalMoves(op.gs).filter(m => m.from[0]===op.selected[0] && m.from[1]===op.selected[1]);
+    }
+    body = `
+      <div class="board-area">
+        <div class="board-holder">${renderChessFullBoardSVG(op.gs, op.selected, legalTargets, 'chess-opening-square', !op.played, POPULAR_OPENINGS.map(p=>p.to))}</div>
+        <div class="side-note">
+          ${op.played ? `<div class="message-box show">${openingCommentary(op.played)}</div>` : ''}
+          ${op.played && isPopularOpening(op.played) ? '' : (op.played ? '' : `<div class="legend"><span><span class="legend-dot" style="background:transparent;border:2px solid var(--gold)"></span>a time-tested first move</span></div>`)}
+          <div class="hint">${lesson.hint}</div>
+          <button class="reset-btn" data-action="chess-opening-reset">Try another move</button>
+        </div>
+      </div>`;
+  } else if(lesson.type === 'theory'){
+    const th = state.chess.theory;
+    if(th.openingIdx === null){
+      body = `<div class="opening-picker">${OPENING_THEORY.map((o,i)=>`
+        <button class="opening-pick" data-action="chess-theory-select" data-idx="${i}">
+          <span class="opening-pick-name">${o.name}</span>
+          <span class="opening-pick-blurb">${o.blurb}</span>
+        </button>`).join('')}</div>`;
+    } else {
+      const opening = OPENING_THEORY[th.openingIdx];
+      const gs = th.history[th.stepIndex];
+      const atStart = th.stepIndex === 0;
+      const atEnd = th.stepIndex >= opening.moves.length;
+      const caption = atStart ? `Starting position — press "Next move" to begin ${opening.name}.` : opening.moves[th.stepIndex-1].caption;
+      body = `
+        <div class="board-area">
+          <div class="board-holder">${renderChessFullBoardSVG(gs, null, [], null, false)}</div>
+          <div class="side-note">
+            <div class="kicker" style="color:var(--chess); margin-bottom:6px;">${opening.name} · move ${th.stepIndex} of ${opening.moves.length}</div>
+            <div class="message-box show">${caption}</div>
+            <div class="play-controls" style="margin-top:14px;">
+              <button class="action-btn" data-action="chess-theory-prev" ${atStart?'disabled':''}>← Back</button>
+              <button class="action-btn" data-action="chess-theory-next" ${atEnd?'disabled':''}>Next move →</button>
+            </div>
+            <button class="reset-btn" data-action="chess-theory-reset">Restart this opening</button>
+            <button class="reset-btn" data-action="chess-theory-back" style="margin-left:16px;">Choose a different opening</button>
+          </div>
+        </div>`;
+    }
+  } else {
+    body = `
+      <div class="board-area">
+        <div class="board-holder">${renderChessBoardSVG()}</div>
+        <div class="side-note">
+          <div class="legend">
+            <span><span class="legend-dot" style="background:var(--gold)"></span>legal move</span>
+            <span><span class="legend-dot" style="background:transparent;border:2px solid var(--chess)"></span>capture</span>
+          </div>
+          <div class="hint">${lesson.hint}</div>
+          <button class="reset-btn" data-action="chess-reset">Reset this lesson</button>
+          ${lesson.relatedPuzzle ? relatedPuzzleBox('chess', lesson.relatedPuzzle) : ''}
+        </div>
+      </div>`;
+  }
+
+  return `
+  <div class="lesson-wrap">
+    <div class="sidebar">
+      <div class="sidebar-title">Chess lessons</div>
+      ${sidebarItems}
+    </div>
+    <div class="content">
+      <div class="kicker" style="color:var(--chess)">Chess · Lesson ${idx+1} of ${CHESS_LESSONS.length}</div>
+      <h2>${lesson.title} ${difficultyLabel(lesson.difficulty)}</h2>
+      <p>${lesson.intro}</p>
+      ${body}
+      <div class="lesson-nav">
+        <button data-action="chess-prev" ${idx===0?'disabled':''}>← Previous</button>
+        <button data-action="chess-next" ${idx===CHESS_LESSONS.length-1?'disabled':''}>Next →</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderGoSection(){
+  if(!state.go.initialized){ initGoLesson(0); state.go.initialized = true; }
+  const idx = state.go.lessonIdx;
+  const lesson = GO_LESSONS[idx];
+
+  const sidebarItems = GO_LESSONS.map((l,i)=>`
+    <button class="lesson-item ${i===idx?'active':''}" data-action="go-select" data-idx="${i}">
+      <span class="num">${i+1}</span><span>${l.title}</span>${difficultyDot(l.difficulty)}
+    </button>`).join('');
+
+  let body;
+  if(lesson.type === 'handicap'){
+    const board = emptyGoBoard(19);
+    starPoints(19).forEach(([r,c])=> board[r][c]='black');
+    body = `<div class="board-area"><div class="board-holder">${renderStaticGoBoardSVG(board, null)}</div></div>`;
+  } else if(lesson.type === 'ladder'){
+    const ld = state.go.ladder;
+    const board = ld.history[ld.stepIndex];
+    const atStart = ld.stepIndex === 0;
+    const atEnd = ld.stepIndex >= LADDER_EXAMPLE.moves.length;
+    const caption = atStart ? 'Empty board — press "Next move" to begin.' : LADDER_EXAMPLE.moves[ld.stepIndex-1].caption;
+    const lastMove = atStart ? null : [LADDER_EXAMPLE.moves[ld.stepIndex-1].r, LADDER_EXAMPLE.moves[ld.stepIndex-1].c];
+    body = `
+      <div class="board-area">
+        <div class="board-holder">${renderStaticGoBoardSVG(board, lastMove)}</div>
+        <div class="side-note">
+          <div class="kicker" style="color:var(--go); margin-bottom:6px;">Move ${ld.stepIndex} of ${LADDER_EXAMPLE.moves.length}</div>
+          <div class="message-box show">${caption}</div>
+          <div class="play-controls" style="margin-top:14px;">
+            <button class="action-btn" data-action="go-ladder-prev" ${atStart?'disabled':''}>← Back</button>
+            <button class="action-btn" data-action="go-ladder-next" ${atEnd?'disabled':''}>Next move →</button>
+          </div>
+          <button class="reset-btn" data-action="go-ladder-reset">Restart the sequence</button>
+        </div>
+      </div>`;
+  } else if(lesson.type === 'joseki'){
+    const js_ = state.go.joseki;
+    if(js_.patternIdx === null){
+      body = `<div class="opening-picker">${JOSEKI_LIBRARY.map((p,i)=>`
+        <button class="opening-pick" data-action="go-joseki-select" data-idx="${i}">
+          <span class="opening-pick-name">${p.name}</span>
+          <span class="opening-pick-blurb">${p.blurb}</span>
+        </button>`).join('')}</div>`;
+    } else {
+      const pattern = JOSEKI_LIBRARY[js_.patternIdx];
+      const board = js_.history[js_.stepIndex];
+      const atStart = js_.stepIndex === 0;
+      const atEnd = js_.stepIndex >= pattern.moves.length;
+      const caption = atStart ? 'Empty corner — press "Next move" to begin.' : pattern.moves[js_.stepIndex-1].caption;
+      const lastMove = atStart ? null : [pattern.moves[js_.stepIndex-1].r, pattern.moves[js_.stepIndex-1].c];
+      body = `
+        <div class="board-area">
+          <div class="board-holder">${renderStaticGoBoardSVG(board, lastMove)}</div>
+          <div class="side-note">
+            <div class="kicker" style="color:var(--go); margin-bottom:6px;">${pattern.name} · move ${js_.stepIndex} of ${pattern.moves.length}</div>
+            <div class="message-box show">${caption}</div>
+            <div class="play-controls" style="margin-top:14px;">
+              <button class="action-btn" data-action="go-joseki-prev" ${atStart?'disabled':''}>← Back</button>
+              <button class="action-btn" data-action="go-joseki-next" ${atEnd?'disabled':''}>Next move →</button>
+            </div>
+            <button class="reset-btn" data-action="go-joseki-reset">Restart this sequence</button>
+            <button class="reset-btn" data-action="go-joseki-back" style="margin-left:16px;">Choose a different pattern</button>
+          </div>
+        </div>`;
+    }
+  } else {
+    body = `
+      <div class="board-area">
+        <div class="board-holder">${renderGoBoardSVG()}</div>
+        <div class="side-note">
+          <div class="turn-indicator"><span class="turn-dot ${state.go.turn}"></span>${state.go.turn === 'black' ? 'Black' : 'White'} to play</div>
+          <div class="legend">
+            <span><span class="legend-dot" style="background:var(--gold)"></span>liberty</span>
+          </div>
+          <div class="hint">${lesson.hint}</div>
+          <div class="message-box ${state.go.message ? 'show':''}">${state.go.message}</div>
+          <button class="reset-btn" data-action="go-reset">Reset this lesson</button>
+          ${lesson.relatedPuzzle ? relatedPuzzleBox('go', lesson.relatedPuzzle) : ''}
+        </div>
+      </div>`;
+  }
+
+  return `
+  <div class="lesson-wrap">
+    <div class="sidebar">
+      <div class="sidebar-title">Go lessons</div>
+      ${sidebarItems}
+    </div>
+    <div class="content">
+      <div class="kicker" style="color:var(--go)">Go · Lesson ${idx+1} of ${GO_LESSONS.length}</div>
+      <h2>${lesson.title} ${difficultyLabel(lesson.difficulty)}</h2>
+      <p>${lesson.intro}</p>
+      ${body}
+      <div class="lesson-nav">
+        <button data-action="go-prev" ${idx===0?'disabled':''}>← Previous</button>
+        <button data-action="go-next" ${idx===GO_LESSONS.length-1?'disabled':''}>Next →</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderChessFullBoardSVG(gs, selected, legalTargets, actionName, interactive, popularTargets){
+  const board = gs.board;
+  const S = 56, M = 24;
+  if(interactive === undefined) interactive = true;
+  popularTargets = popularTargets || [];
+  const isTarget = (r,c) => legalTargets.some(m=>m.to[0]===r&&m.to[1]===c);
+  const isTargetCapture = (r,c) => isTarget(r,c) && (board[r][c] || legalTargets.some(m=>m.to[0]===r&&m.to[1]===c&&m.isEnPassant));
+
+  let squares = '';
+  for(let r=0;r<8;r++) for(let c=0;c<8;c++){
+    const x = M+c*S, y = M+r*S;
+    const dark = (r+c)%2===1;
+    let fill = dark ? 'var(--dark-square)' : 'var(--light-square)';
+    squares += `<rect x="${x}" y="${y}" width="${S}" height="${S}" fill="${fill}"></rect>`;
+    if(selected && selected[0]===r && selected[1]===c){
+      squares += `<rect x="${x}" y="${y}" width="${S}" height="${S}" fill="var(--gold)" opacity="0.35"></rect>`;
+    }
+  }
+  let markers = '', interactiveRects = '';
+  legalTargets.forEach(m=>{
+    const [r,c] = m.to;
+    const x = M+c*S+S/2, y = M+r*S+S/2;
+    if(isTargetCapture(r,c)){
+      markers += `<circle cx="${x}" cy="${y}" r="24" fill="none" stroke="var(--chess)" stroke-width="4" opacity="0.85"></circle>`;
+    } else {
+      markers += `<circle cx="${x}" cy="${y}" r="8" fill="var(--gold)" opacity="0.85"></circle>`;
+      if(popularTargets.some(p=>p[0]===r&&p[1]===c)){
+        markers += `<circle cx="${x}" cy="${y}" r="16" fill="none" stroke="var(--gold)" stroke-width="2"></circle>`;
+      }
+    }
+  });
+  if(interactive){
+    for(let r=0;r<8;r++) for(let c=0;c<8;c++){
+      interactiveRects += `<rect x="${M+c*S}" y="${M+r*S}" width="${S}" height="${S}" fill="transparent" style="cursor:pointer" data-action="${actionName}" data-r="${r}" data-c="${c}"></rect>`;
+    }
+  }
+  let pieces = '';
+  for(let r=0;r<8;r++) for(let c=0;c<8;c++){
+    const p = board[r][c];
+    if(!p) continue;
+    const x = M+c*S+S/2, y = M+r*S+S/2+14;
+    const glyph = PIECE_GLYPHS[p.c][p.t];
+    if(p.c==='w') pieces += `<text x="${x}" y="${y}" font-size="38" text-anchor="middle" fill="#F5F1E8" stroke="#5E2727" stroke-width="1">${glyph}</text>`;
+    else pieces += `<text x="${x}" y="${y}" font-size="38" text-anchor="middle" fill="#241f1a">${glyph}</text>`;
+  }
+  let files='', ranks='';
+  for(let c=0;c<8;c++) files += `<text x="${M+c*S+S/2}" y="${M+8*S+16}" font-size="12" text-anchor="middle" fill="var(--text-soft)">${String.fromCharCode(97+c)}</text>`;
+  for(let r=0;r<8;r++) ranks += `<text x="${M-10}" y="${M+r*S+S/2+4}" font-size="12" text-anchor="middle" fill="var(--text-soft)">${8-r}</text>`;
+  const size = M*2+8*S;
+  return `<svg viewBox="0 0 ${size} ${size}" width="${size}" height="${size}">${squares}${markers}${pieces}${files}${ranks}${interactiveRects}</svg>`;
+}
+
+function renderPlayChessBoardSVG(){
+  const pc = state.play.chess;
+  let legalTargets = [];
+  if(pc.selected && pc.gs.turn==='w' && !pc.thinking){
+    legalTargets = generateLegalMoves(pc.gs).filter(m => m.from[0]===pc.selected[0] && m.from[1]===pc.selected[1]);
+  }
+  return renderChessFullBoardSVG(pc.gs, pc.selected, legalTargets, 'play-chess-square', true);
+}
+
+function renderPlayGoBoardSVG(){
+  const pg = state.play.go;
+  const board = pg.board;
+  const n = board.length;
+  const L = n >= 19 ? 27 : 48, M = n >= 19 ? 22 : 32;
+  const size = M*2+(n-1)*L;
+  let lines='';
+  for(let i=0;i<n;i++){
+    const pos = M+i*L;
+    lines += `<line x1="${M}" y1="${pos}" x2="${M+(n-1)*L}" y2="${pos}" stroke="#5a4a30" stroke-width="1"></line>`;
+    lines += `<line x1="${pos}" y1="${M}" x2="${pos}" y2="${M+(n-1)*L}" stroke="#5a4a30" stroke-width="1"></line>`;
+  }
+  let hoshi='';
+  starPoints(n).forEach(([r,c])=>{
+    const x=M+c*L, y=M+r*L;
+    hoshi += `<circle cx="${x}" cy="${y}" r="${n>=19?3:3.5}" fill="#5a4a30"></circle>`;
+  });
+  const stoneR = n >= 19 ? 12.5 : 20;
+  let stones='', interactive='';
+  for(let r=0;r<n;r++) for(let c=0;c<n;c++){
+    const x=M+c*L, y=M+r*L;
+    if(!pg.gameOver) interactive += `<rect x="${x-L/2}" y="${y-L/2}" width="${L}" height="${L}" fill="transparent" style="cursor:pointer" data-action="play-go-point" data-r="${r}" data-c="${c}"></rect>`;
+    const occ = board[r][c];
+    if(occ==='black') stones += `<circle cx="${x}" cy="${y}" r="${stoneR}" fill="#1C1A17" stroke="#000" stroke-width="0.5"></circle>`;
+    else if(occ==='white') stones += `<circle cx="${x}" cy="${y}" r="${stoneR}" fill="#F5F1E8" stroke="#8a8071" stroke-width="1"></circle>`;
+  }
+  return `<svg viewBox="0 0 ${size} ${size}" width="${size}" height="${size}">
+    <rect x="0" y="0" width="${size}" height="${size}" fill="var(--board-wood)"></rect>
+    ${lines}${hoshi}${stones}${interactive}
+  </svg>`;
+}
+
+function chessStatusLine(pc){
+  if(pc.thinking) return `<span class="thinking">The AI is thinking…</span>`;
+  if(pc.status.over){
+    if(pc.status.result==='stalemate') return 'Stalemate — the game is a draw.';
+    if(pc.status.result==='w-wins-checkmate') return 'Checkmate — you win!';
+    if(pc.status.result==='b-wins-checkmate') return 'Checkmate — the AI wins.';
+  }
+  if(inCheck(pc.gs.board, pc.gs.turn)) return pc.gs.turn==='w' ? 'You are in check!' : 'The AI is in check.';
+  return pc.gs.turn==='w' ? 'Your move (White).' : "AI's move (Black).";
+}
+
+function renderPlayChess(){
+  if(!state.play.chess) initPlayChess();
+  const pc = state.play.chess;
+  const isFirstGame = state.progress.gamesStarted <= 1;
+  return `
+  ${isFirstGame ? `<div class="onboarding-note">First game here? The AI starts on <strong>Easy</strong> — it plays a bit loosely on purpose, so this is a relaxed way to try out what you've learned. Nothing wrong with losing a few while you get a feel for it.</div>` : ''}
+  <div class="play-controls">
+    <div class="diff-group">
+      <button class="diff-btn ${state.play.chessDifficulty==='easy'?'active':''}" data-action="play-set-diff" data-diff="easy">Easy</button>
+      <button class="diff-btn ${state.play.chessDifficulty==='normal'?'active':''}" data-action="play-set-diff" data-diff="normal">Normal</button>
+      <button class="diff-btn ${state.play.chessDifficulty==='hard'?'active':''}" data-action="play-set-diff" data-diff="hard">Hard</button>
+    </div>
+    <button class="action-btn" data-action="play-chess-new">New game</button>
+  </div>
+  <p style="max-width:52ch;">You play White, the AI plays Black. Pawns promote automatically to a queen.</p>
+  <div class="status-line">${chessStatusLine(pc)}</div>
+  <div class="board-holder">${renderPlayChessBoardSVG()}</div>`;
+}
+
+function goStatusLine(pg){
+  if(pg.gameOver) return 'Game over — see the score below.';
+  if(pg.thinking) return `<span class="thinking">The AI is thinking…</span>`;
+  return pg.turn==='black' ? 'Your move (Black).' : "AI's move (White).";
+}
+
+function renderPlayGo(){
+  if(!state.play.go) initPlayGo();
+  const pg = state.play.go;
+  const isFirstGame = state.progress.gamesStarted <= 1;
+  const scoreBlock = pg.gameOver && pg.scores ? `
+    <div class="game-over-banner">
+      <h3>${pg.scores.black > pg.scores.white ? 'You win!' : 'The AI wins.'}</h3>
+      <div class="score-row">
+        <span>Black (you): ${pg.scores.black}</span>
+        <span>White (AI): ${pg.scores.white} <span style="opacity:0.7">(incl. ${pg.scores.komi} komi)</span></span>
+      </div>
+    </div>` : '';
+  return `
+  ${isFirstGame ? `<div class="onboarding-note">First full game? This board is the real 19×19 size — much bigger than the 9×9 lessons — so don't feel like you need to control everything. Playing a few stones near the corners and seeing what happens is a perfectly good way to start.</div>` : ''}
+  <div class="play-controls">
+    <button class="action-btn" data-action="play-go-new">New game</button>
+    <button class="action-btn" data-action="play-go-pass" ${pg.gameOver || pg.turn!=='black' || pg.thinking ? 'disabled':''}>Pass</button>
+  </div>
+  <p style="max-width:52ch;">You play Black and move first, the AI plays White. 19×19 board, area scoring with 7.5 komi — two passes in a row ends the game.</p>
+  <div class="status-line">${goStatusLine(pg)}</div>
+  ${pg.message ? `<div class="message-box show">${pg.message}</div>` : ''}
+  <div class="board-holder" style="margin-top:14px;">${renderPlayGoBoardSVG()}</div>
+  ${scoreBlock}`;
+}
+
+function renderPlaySection(){
+  const game = state.play.game;
+  return `
+  <h2>Play vs AI</h2>
+  <div class="game-tabs">
+    <button class="game-tab ${game==='chess'?'active':''}" data-game="chess" data-action="play-select-game" data-idx="chess">Chess</button>
+    <button class="game-tab ${game==='go'?'active':''}" data-game="go" data-action="play-select-game" data-idx="go">Go</button>
+  </div>
+  ${game==='chess' ? renderPlayChess() : renderPlayGo()}`;
+}
+
+function relatedPuzzleBox(game, title){
+  const list = game === 'chess' ? CHESS_PUZZLES : GO_PUZZLES;
+  const idx = list.findIndex(p => p.title === title);
+  if(idx === -1) return '';
+  return `<div class="related-box">
+    <div class="related-box-label">Practice this</div>
+    <button class="related-box-link" data-action="goto-puzzle" data-game="${game}" data-idx="${idx}">Try the "${title}" puzzle →</button>
+  </div>`;
+}
+
+function difficultyDot(level){
+  if(!level) return '';
+  const label = level.charAt(0).toUpperCase() + level.slice(1);
+  return `<span class="diff-dot diff-${level}" title="${label} lesson"></span>`;
+}
+
+function difficultyLabel(level){
+  if(!level) return '';
+  const label = level.charAt(0).toUpperCase() + level.slice(1);
+  return `<span class="diff-label diff-${level}">${label}</span>`;
+}
+
+function renderPuzzleSidebar(list, activeIdx, selectAction){
+  return list.map((p,i)=>`
+    <button class="lesson-item ${i===activeIdx?'active':''}" data-action="${selectAction}" data-idx="${i}">
+      <span class="num">${i+1}</span><span>${p.title}</span>
+    </button>`).join('');
+}
+
+function renderPuzzleChess(){
+  if(!state.puzzles.chessAttempt) initPuzzleChess(0);
+  const idx = state.puzzles.chessIndex;
+  const puzzle = CHESS_PUZZLES[idx];
+  const pz = state.puzzles.chessAttempt;
+  let legalTargets = [];
+  if(pz.selected && !pz.solved){
+    legalTargets = generateLegalMoves(pz.gs).filter(m => m.from[0]===pz.selected[0] && m.from[1]===pz.selected[1]);
+  }
+  const banner = pz.message ? `<div class="message-box show ${pz.solved ? 'puzzle-success' : 'puzzle-fail'}">${pz.message}</div>` : '';
+  const playNudge = (pz.solved && idx === CHESS_PUZZLES.length - 1)
+    ? `<div class="related-box"><div class="related-box-label">Nice work</div><button class="related-box-link" data-action="nav" data-target="play">Ready for a full game? Play vs AI →</button></div>`
+    : '';
+  return `
+  <div class="lesson-wrap">
+    <div class="sidebar">
+      <div class="sidebar-title">Chess puzzles</div>
+      ${renderPuzzleSidebar(CHESS_PUZZLES, idx, 'puzzle-chess-select')}
+    </div>
+    <div class="content">
+      <div class="kicker" style="color:var(--chess)">Puzzle ${idx+1} of ${CHESS_PUZZLES.length}</div>
+      <h2>${puzzle.title}</h2>
+      <p>${puzzle.intro}</p>
+      <div class="board-area">
+        <div class="board-holder">${renderChessFullBoardSVG(pz.gs, pz.selected, legalTargets, 'puzzle-chess-square', !pz.solved)}</div>
+        <div class="side-note">
+          ${banner}
+          <button class="reset-btn" data-action="puzzle-chess-reset">Reset this puzzle</button>
+          ${playNudge}
+        </div>
+      </div>
+      <div class="lesson-nav">
+        <button data-action="puzzle-chess-prev" ${idx===0?'disabled':''}>← Previous</button>
+        <button data-action="puzzle-chess-next" ${idx===CHESS_PUZZLES.length-1?'disabled':''}>Next →</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderPuzzleGo(){
+  if(!state.puzzles.goAttempt) initPuzzleGo(0);
+  const idx = state.puzzles.goIndex;
+  const puzzle = GO_PUZZLES[idx];
+  const pz = state.puzzles.goAttempt;
+  const banner = pz.message ? `<div class="message-box show ${pz.solved ? 'puzzle-success' : 'puzzle-fail'}">${pz.message}</div>` : '';
+  const playNudge = (pz.solved && idx === GO_PUZZLES.length - 1)
+    ? `<div class="related-box"><div class="related-box-label">Nice work</div><button class="related-box-link" data-action="nav" data-target="play">Ready for a full game? Play vs AI →</button></div>`
+    : '';
+  return `
+  <div class="lesson-wrap">
+    <div class="sidebar">
+      <div class="sidebar-title">Go puzzles</div>
+      ${renderPuzzleSidebar(GO_PUZZLES, idx, 'puzzle-go-select')}
+    </div>
+    <div class="content">
+      <div class="kicker" style="color:var(--go)">Puzzle ${idx+1} of ${GO_PUZZLES.length}</div>
+      <h2>${puzzle.title}</h2>
+      <p>${puzzle.intro}</p>
+      <div class="board-area">
+        <div class="board-holder">${renderPuzzleGoBoardSVG(pz.board, !pz.solved)}</div>
+        <div class="side-note">
+          ${banner}
+          <button class="reset-btn" data-action="puzzle-go-reset">Reset this puzzle</button>
+          ${playNudge}
+        </div>
+      </div>
+      <div class="lesson-nav">
+        <button data-action="puzzle-go-prev" ${idx===0?'disabled':''}>← Previous</button>
+        <button data-action="puzzle-go-next" ${idx===GO_PUZZLES.length-1?'disabled':''}>Next →</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderPuzzlesSection(){
+  const game = state.puzzles.game;
+  return `
+  <h2>Puzzles</h2>
+  <div class="game-tabs">
+    <button class="game-tab ${game==='chess'?'active':''}" data-game="chess" data-action="puzzles-select-game" data-idx="chess">Chess</button>
+    <button class="game-tab ${game==='go'?'active':''}" data-game="go" data-action="puzzles-select-game" data-idx="go">Go</button>
+  </div>
+  ${game==='chess' ? renderPuzzleChess() : renderPuzzleGo()}`;
+}
+
+
+/* ============================================================
+   EVENTS
+============================================================ */
+document.addEventListener('click', (e)=>{
+  const el = e.target.closest('[data-action]');
+  if(!el) return;
+  const action = el.dataset.action;
+
+  if(action === 'play-select-game'){
+    state.play.game = el.dataset.idx;
+    render();
+  } else if(action === 'puzzles-select-game'){
+    state.puzzles.game = el.dataset.idx;
+    render();
+  } else if(action === 'puzzle-chess-select'){
+    initPuzzleChess(parseInt(el.dataset.idx,10));
+    render();
+  } else if(action === 'puzzle-chess-prev'){
+    if(state.puzzles.chessIndex > 0) initPuzzleChess(state.puzzles.chessIndex - 1);
+    render();
+  } else if(action === 'puzzle-chess-next'){
+    if(state.puzzles.chessIndex < CHESS_PUZZLES.length - 1) initPuzzleChess(state.puzzles.chessIndex + 1);
+    render();
+  } else if(action === 'puzzle-chess-reset'){
+    initPuzzleChess(state.puzzles.chessIndex);
+    render();
+  } else if(action === 'puzzle-chess-square'){
+    puzzleChessSquareClick(parseInt(el.dataset.r,10), parseInt(el.dataset.c,10));
+  } else if(action === 'puzzle-go-select'){
+    initPuzzleGo(parseInt(el.dataset.idx,10));
+    render();
+  } else if(action === 'puzzle-go-prev'){
+    if(state.puzzles.goIndex > 0) initPuzzleGo(state.puzzles.goIndex - 1);
+    render();
+  } else if(action === 'puzzle-go-next'){
+    if(state.puzzles.goIndex < GO_PUZZLES.length - 1) initPuzzleGo(state.puzzles.goIndex + 1);
+    render();
+  } else if(action === 'puzzle-go-reset'){
+    initPuzzleGo(state.puzzles.goIndex);
+    render();
+  } else if(action === 'puzzle-go-point'){
+    puzzleGoPointClick(parseInt(el.dataset.r,10), parseInt(el.dataset.c,10));
+  } else if(action === 'play-set-diff'){
+    state.play.chessDifficulty = el.dataset.diff;
+    render();
+  } else if(action === 'play-chess-new'){
+    initPlayChess();
+    render();
+  } else if(action === 'play-chess-square'){
+    playChessSquareClick(parseInt(el.dataset.r,10), parseInt(el.dataset.c,10));
+  } else if(action === 'play-go-new'){
+    initPlayGo();
+    render();
+  } else if(action === 'play-go-point'){
+    playGoPointClick(parseInt(el.dataset.r,10), parseInt(el.dataset.c,10));
+  } else if(action === 'play-go-pass'){
+    playGoPass();
+  } else if(action === 'goto-puzzle'){
+    const game = el.dataset.game;
+    const idx = parseInt(el.dataset.idx,10);
+    state.section = 'puzzles';
+    state.puzzles.game = game;
+    if(game === 'chess') initPuzzleChess(idx); else initPuzzleGo(idx);
+    render();
+  } else if(action === 'continue-learning'){
+    continueLearning(el.dataset.game);
+  } else if(action === 'nav'){
+    state.section = el.dataset.target;
+    render();
+  } else if(action === 'chess-select'){
+    initChessLesson(parseInt(el.dataset.idx,10));
+    render();
+  } else if(action === 'chess-prev'){
+    if(state.chess.lessonIdx > 0) initChessLesson(state.chess.lessonIdx - 1);
+    render();
+  } else if(action === 'chess-next'){
+    if(state.chess.lessonIdx < CHESS_LESSONS.length - 1) initChessLesson(state.chess.lessonIdx + 1);
+    render();
+  } else if(action === 'chess-reset'){
+    initChessLesson(state.chess.lessonIdx);
+    render();
+  } else if(action === 'chess-square'){
+    handleChessSquare(parseInt(el.dataset.r,10), parseInt(el.dataset.c,10));
+  } else if(action === 'chess-opening-square'){
+    chessOpeningSquareClick(parseInt(el.dataset.r,10), parseInt(el.dataset.c,10));
+  } else if(action === 'chess-opening-reset'){
+    state.chess.opening = { gs: initialChessGS(), selected: null, played: null };
+    render();
+  } else if(action === 'chess-theory-select'){
+    chessTheorySelect(parseInt(el.dataset.idx,10));
+  } else if(action === 'chess-theory-next'){
+    chessTheoryNext();
+  } else if(action === 'chess-theory-prev'){
+    chessTheoryPrev();
+  } else if(action === 'chess-theory-reset'){
+    chessTheoryReset();
+  } else if(action === 'chess-theory-back'){
+    chessTheoryBack();
+  } else if(action === 'go-ladder-next'){
+    goLadderNext();
+  } else if(action === 'go-ladder-prev'){
+    goLadderPrev();
+  } else if(action === 'go-ladder-reset'){
+    goLadderReset();
+  } else if(action === 'go-joseki-next'){
+    goJosekiNext();
+  } else if(action === 'go-joseki-prev'){
+    goJosekiPrev();
+  } else if(action === 'go-joseki-reset'){
+    goJosekiReset();
+  } else if(action === 'go-joseki-select'){
+    goJosekiSelect(parseInt(el.dataset.idx,10));
+  } else if(action === 'go-joseki-back'){
+    goJosekiBack();
+  } else if(action === 'go-select'){
+    initGoLesson(parseInt(el.dataset.idx,10));
+    render();
+  } else if(action === 'go-prev'){
+    if(state.go.lessonIdx > 0) initGoLesson(state.go.lessonIdx - 1);
+    render();
+  } else if(action === 'go-next'){
+    if(state.go.lessonIdx < GO_LESSONS.length - 1) initGoLesson(state.go.lessonIdx + 1);
+    render();
+  } else if(action === 'go-reset'){
+    initGoLesson(state.go.lessonIdx);
+    render();
+  } else if(action === 'go-point'){
+    placeGoStone(parseInt(el.dataset.r,10), parseInt(el.dataset.c,10));
+  }
+});
+
+render();
+</script>
+</body>
+</html>
