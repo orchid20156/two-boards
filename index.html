@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Two Boards — Learn Chess & Go</title>
+
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header>
+  <div class="brand" data-action="nav" data-target="home">Two&nbsp;Boards</div>
+  <div id="mode-switch" class="mode-switch" role="group" aria-label="Choose how to play">
+    <button type="button" class="mode-btn" data-action="mode-switch" data-mode="learning" aria-pressed="true"><span aria-hidden="true">📚</span> Learning</button>
+    <button type="button" class="mode-btn" data-action="mode-switch" data-mode="adventure" aria-pressed="false"><span aria-hidden="true">🗺️</span> Adventure</button>
+  </div>
+  <select id="lang-select" class="lang-select" aria-label="Language" translate="no"><option value="en">English</option></select>
+  <nav id="learn-nav" aria-label="Learning menu">
+    <button class="navlink" data-action="nav" data-target="home">Home</button>
+    <button class="navlink" data-action="nav" data-target="chess">Chess</button>
+    <button class="navlink" data-action="nav" data-target="go">Go</button>
+    <button class="navlink" data-action="nav" data-target="xiangqi">Xiangqi</button>
+    <button class="navlink" data-action="nav" data-target="checkers">Chinese Checkers</button>
+    <button class="navlink" data-action="nav" data-target="gomoku">Gomoku</button>
+    <button class="navlink" data-action="nav" data-target="play">Play vs AI</button>
+    <button class="navlink" data-action="nav" data-target="puzzles">Puzzles</button>
+    <button class="navlink navlink-rush" data-action="nav" data-target="rush">⚡ Puzzle Rush</button>
+    <button class="navlink navlink-daily" data-action="nav" data-target="daily">🗓️ Daily Challenge</button>
+    <button class="navlink" data-action="nav" data-target="atlas">📖 Atlas</button>
+    <button class="navlink navlink-review" data-action="nav" data-target="review">🔁 Review</button>
+  </nav>
+  <nav id="adv-nav" aria-label="Adventure menu">
+    <button class="advlink" data-action="adv-go" data-screen="map">🗺️ Map</button>
+    <button class="advlink" data-action="adv-go" data-screen="profile">🧒 Me</button>
+    <button class="advlink" data-action="adv-go" data-screen="book">📒 Stickers</button>
+    <button class="advlink" data-action="adv-go" data-screen="standings">🏆 Standings</button>
+    <button class="advlink advlink-small" data-action="adv-go" data-screen="grownups">👪 Grown-ups</button>
+  </nav>
+  <div id="adv-hud" aria-label="Your adventure score"></div>
+  <div id="gamify-bar"></div>
+  <div id="save-note" class="save-note" role="status" hidden></div>
+</header>
+<main id="app"></main>
+
+<script src="i18n-zh.js"></script>
+<script src="i18n-ja.js"></script>
+<script src="i18n-ko.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
